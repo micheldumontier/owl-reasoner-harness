@@ -1,4 +1,7 @@
 /target
-*.jsonl
-*.csv
+# scratch runs are ignored; reference runs live in baselines/ and ARE tracked.
+# A run whose numbers get cited must be committed -- three separate artifacts were
+# nearly lost to gitignored paths in this harness's first session.
 /runs/
+*.csv
+!baselines/*.jsonl
