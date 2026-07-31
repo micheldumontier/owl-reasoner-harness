@@ -24,6 +24,14 @@ not hypothetical:
 | **Streaming JSONL, resumable** | A pipeline through `tail` lost everything when an outer timeout killed the loop; `tail` buffers to EOF. |
 | **`compare` as a first-class verb** | Answer-identity across two builds (e.g. "286 ontologies, 0 diffs") was hand-rolled each time it was needed. |
 
+## The other half: measurement discipline
+
+`skills/corpus-measurement/SKILL.md` holds the part this tool cannot enforce — pin-verify-smoke
+before a long run, and a pre-report checklist derived from five retracted measurements. The harness
+can check an exit code; it cannot check whether your population was selected on the binding
+predicate or on a proxy, whether a per-item timeout chose your sample, or whether you are citing a
+bound as a result. Read it before quoting a number.
+
 ## Model
 
 ```
