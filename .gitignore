@@ -5,3 +5,4 @@
 /runs/
 *.csv
 !baselines/*.jsonl
+scripts/__pycache__/
