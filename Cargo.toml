@@ -1,5 +1,5 @@
 [package]
-name = "owl-corpus-harness"
+name = "owl-reasoner-harness"
 version = "0.1.0"
 edition = "2021"
 description = "Reasoner-agnostic corpus measurement harness: fingerprint, run, report, compare"

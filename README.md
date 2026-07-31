@@ -1,4 +1,4 @@
-# owl-corpus-harness
+# owl-reasoner-harness
 
 A **reasoner-agnostic corpus measurement harness**. Point it at a directory of ontologies
 and a reasoner command; it produces one durable record per ontology — wall time, peak RSS,
@@ -58,17 +58,17 @@ cargo build --release
 
 # measure. --require-marker greps the binary and ABORTS if absent, so an
 # instrumented/sabotaged build can never be mistaken for the real one.
-owl-corpus-harness run \
+owl-reasoner-harness run \
     --corpus /data/ore/files \
     --reasoner ./target/release/rustdl --args 'classify {}' \
     --cap-secs 30 --threads 1 --max-bytes 400000000 \
     --out runs/v046.jsonl
 
 # aggregate; --at derives would-miss counts for any cap <= the run's cap, no re-run
-owl-corpus-harness report runs/v046.jsonl --at 1,5,10,30 --top-rss 25
+owl-reasoner-harness report runs/v046.jsonl --at 1,5,10,30 --top-rss 25
 
 # two builds or two flag settings
-owl-corpus-harness compare runs/v045.jsonl runs/v046.jsonl
+owl-reasoner-harness compare runs/v045.jsonl runs/v046.jsonl
 ```
 
 `{}` in `--args` is replaced by the ontology path. `--threads` sets `RAYON_NUM_THREADS`

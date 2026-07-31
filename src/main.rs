@@ -11,7 +11,7 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(
-    name = "owl-corpus-harness",
+    name = "owl-reasoner-harness",
     about = "Measure a reasoner over an ontology corpus: fingerprint, run, report, compare"
 )]
 struct Cli {
