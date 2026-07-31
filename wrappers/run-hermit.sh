@@ -9,6 +9,12 @@
 # HermiT's -c writes to the -o PATH, never to stdout, so a run without OUT yields no
 # classification at all; the ontology dir is mounted read-only so a reasoner run can
 # never mutate the corpus, and OUT is mounted separately.
+# HARNESS_OUT_DIR, if set, overrides $2 (see run-konclude.sh for why outcome must be
+# decided from output content rather than an exit code).
+if [ -n "${HARNESS_OUT_DIR:-}" ]; then
+  mkdir -p "$HARNESS_OUT_DIR"
+  set -- "$1" "$HARNESS_OUT_DIR/$(basename "${1%.*}").owx"
+fi
 f=$(readlink -f "$1"); d=$(dirname "$f"); b=$(basename "$f")
 if [ -z "${2:-}" ]; then
   exec docker run --rm -v "$d":/w:ro --entrypoint java obolibrary/robot:v1.9.6 \
