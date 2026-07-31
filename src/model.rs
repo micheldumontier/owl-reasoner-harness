@@ -65,6 +65,10 @@ pub struct Header {
     pub corpus: String,
     pub n_candidates: usize,
     pub host_cores: usize,
+    /// When `--only` was used: number of stems in the list file.
+    pub only_requested: Option<usize>,
+    /// When `--only` was used: number of stems that resolved to an existing file.
+    pub only_resolved: Option<usize>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

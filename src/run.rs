@@ -45,6 +45,11 @@ pub struct RunArgs {
     /// Abort if this string IS present (the inverse guard: prove a build is clean).
     #[arg(long)]
     pub forbid_marker: Option<String>,
+    /// File containing one ontology stem per line (blank lines and `#` comments ignored).
+    /// When given, only those stems are measured; missing stems are emitted as `Skipped`
+    /// records — never silently dropped.
+    #[arg(long)]
+    pub only: Option<PathBuf>,
     /// Digest stdout per ontology, enabling `compare` to check answer identity.
     #[arg(long, default_value_t = true)]
     pub digest_output: bool,
@@ -61,9 +66,7 @@ fn sha256_file(p: &Path) -> std::io::Result<String> {
 
 fn binary_contains(p: &Path, needle: &str) -> std::io::Result<bool> {
     let bytes = fs::read(p)?;
-    Ok(bytes
-        .windows(needle.len())
-        .any(|w| w == needle.as_bytes()))
+    Ok(bytes.windows(needle.len()).any(|w| w == needle.as_bytes()))
 }
 
 pub fn main(a: RunArgs) -> Result<(), String> {
@@ -104,20 +107,62 @@ pub fn main(a: RunArgs) -> Result<(), String> {
         .filter(|s| !s.is_empty());
 
     let exts: Vec<String> = a.ext.split(',').map(|s| s.trim().to_lowercase()).collect();
-    let mut files: Vec<PathBuf> = fs::read_dir(&a.corpus)
-        .map_err(|e| format!("reading corpus: {e}"))?
-        .filter_map(Result::ok)
-        .map(|e| e.path())
-        .filter(|p| {
-            p.is_file()
-                && p.extension()
-                    .and_then(|s| s.to_str())
-                    .map(|s| exts.contains(&s.to_lowercase()))
-                    .unwrap_or(false)
-        })
-        .collect();
-    files.sort();
 
+    // Build the candidate list. If `--only` was given, resolve each requested stem
+    // against `--corpus`; missing stems become `Skipped` records (never silent drops).
+    // Otherwise, enumerate the corpus directory as before.
+    let (files, missing_stems, only_requested, only_resolved): (
+        Vec<PathBuf>,
+        Vec<String>,
+        Option<usize>,
+        Option<usize>,
+    ) = if let Some(only_path) = &a.only {
+        let list_text = fs::read_to_string(only_path)
+            .map_err(|e| format!("reading --only file {}: {e}", only_path.display()))?;
+        let stems: Vec<String> = list_text
+            .lines()
+            .map(|l| l.trim())
+            .filter(|l| !l.is_empty() && !l.starts_with('#'))
+            .map(|l| l.to_string())
+            .collect();
+        let n_requested = stems.len();
+        let mut resolved = Vec::new();
+        let mut missing = Vec::new();
+        for stem in &stems {
+            let found = exts.iter().find_map(|ext| {
+                let p = a.corpus.join(format!("{stem}.{ext}"));
+                if p.is_file() {
+                    Some(p)
+                } else {
+                    None
+                }
+            });
+            match found {
+                Some(p) => resolved.push(p),
+                None => missing.push(stem.clone()),
+            }
+        }
+        let n_resolved = resolved.len();
+        resolved.sort();
+        (resolved, missing, Some(n_requested), Some(n_resolved))
+    } else {
+        let mut fs_files: Vec<PathBuf> = fs::read_dir(&a.corpus)
+            .map_err(|e| format!("reading corpus: {e}"))?
+            .filter_map(Result::ok)
+            .map(|e| e.path())
+            .filter(|p| {
+                p.is_file()
+                    && p.extension()
+                        .and_then(|s| s.to_str())
+                        .map(|s| exts.contains(&s.to_lowercase()))
+                        .unwrap_or(false)
+            })
+            .collect();
+        fs_files.sort();
+        (fs_files, Vec::new(), None, None)
+    };
+
+    // Ensure the output directory exists before creating the file.
     if let Some(parent) = a.out.parent() {
         if !parent.as_os_str().is_empty() {
             fs::create_dir_all(parent).ok();
@@ -141,17 +186,52 @@ pub fn main(a: RunArgs) -> Result<(), String> {
         host_cores: std::thread::available_parallelism()
             .map(|n| n.get())
             .unwrap_or(0),
+        only_requested,
+        only_resolved,
     };
     writeln!(w, "{}", serde_json::to_string(&header).unwrap()).ok();
     w.flush().ok();
-    eprintln!(
-        "harness: {} candidates, cap {}s, threads {:?}, sha256 {}",
-        files.len(),
-        a.cap_secs,
-        a.threads,
-        &header.sha256[..12]
-    );
 
+    if let (Some(req), Some(res)) = (only_requested, only_resolved) {
+        eprintln!(
+            "harness: --only mode: {req} requested, {res} resolved, {} missing, cap {}s, threads {:?}, sha256 {}",
+            req.saturating_sub(res),
+            a.cap_secs,
+            a.threads,
+            &header.sha256[..12]
+        );
+    } else {
+        eprintln!(
+            "harness: {} candidates, cap {}s, threads {:?}, sha256 {}",
+            files.len(),
+            a.cap_secs,
+            a.threads,
+            &header.sha256[..12]
+        );
+    }
+
+    // Emit Skipped records for stems that did not resolve to a file.
+    for stem in &missing_stems {
+        let exts_list = exts.join("|");
+        emit(
+            &mut w,
+            Case {
+                kind: "case".into(),
+                ont: stem.clone(),
+                outcome: crate::model::Outcome::Skipped.as_str().into(),
+                wall_s: None,
+                peak_rss_kb: None,
+                bytes: None,
+                skip_reason: Some(format!(
+                    "requested via --only but no {stem}.{{{exts_list}}} found in corpus"
+                )),
+                out_sha256: None,
+                out_lines: None,
+            },
+        );
+    }
+
+    let n_files = files.len();
     let mut n = 0usize;
     for path in &files {
         n += 1;
@@ -252,8 +332,8 @@ pub fn main(a: RunArgs) -> Result<(), String> {
             },
         );
 
-        if n % 200 == 0 {
-            eprintln!("  ...{n}/{}", files.len());
+        if n.is_multiple_of(200) {
+            eprintln!("  ...{n}/{n_files}");
         }
     }
     w.flush().ok();
@@ -267,7 +347,7 @@ pub fn main(a: RunArgs) -> Result<(), String> {
 /// (timeouts, crashes) whose peak RSS matters most.
 fn read_timing(p: &Path) -> Option<(Option<f64>, Option<u64>)> {
     let s = fs::read_to_string(p).ok()?;
-    let last = s.lines().filter(|l| !l.trim().is_empty()).next_back()?;
+    let last = s.lines().rfind(|l| !l.trim().is_empty())?;
     let mut it = last.split_whitespace();
     let w = it.next()?.parse::<f64>().ok();
     let r = it.next()?.parse::<u64>().ok();

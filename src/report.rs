@@ -51,7 +51,10 @@ pub fn main(a: ReportArgs) -> Result<(), String> {
     println!("## provenance (compare this FIRST when two runs disagree)");
     println!("  reasoner     {}", h.reasoner);
     println!("  sha256       {}", h.sha256);
-    println!("  version      {}", h.version.as_deref().unwrap_or("<none>"));
+    println!(
+        "  version      {}",
+        h.version.as_deref().unwrap_or("<none>")
+    );
     if let Some(m) = &h.marker_checked {
         println!("  marker       {m} (verified present before the run)");
     }
@@ -75,7 +78,16 @@ pub fn main(a: ReportArgs) -> Result<(), String> {
         count("skipped"),
     );
 
-    println!("\n## outcomes ({n} records of {} candidates)", h.n_candidates);
+    println!(
+        "\n## outcomes ({n} records of {} candidates)",
+        h.n_candidates
+    );
+    if let (Some(req), Some(res)) = (h.only_requested, h.only_resolved) {
+        println!(
+            "  [--only mode: {req} requested, {res} resolved, {} missing]",
+            req.saturating_sub(res)
+        );
+    }
     for (label, c) in [
         ("ok", ok),
         ("dnf", dnf),
@@ -84,7 +96,19 @@ pub fn main(a: ReportArgs) -> Result<(), String> {
         ("skipped", skip),
     ] {
         if c > 0 {
-            println!("  {label:<11} {c:>6}  ({:.1}%)", pct(c, n));
+            // RULE 3: never print a dnf count without the cap it was measured at.
+            // A `dnf` without its cap was once read as "does not terminate"; 55 of 312
+            // "DNF" ontologies later completed at a larger budget — that misreading drove
+            // a retracted spec, plan, and soundness argument.
+            if label == "dnf" {
+                println!(
+                    "  {label:<11} {c:>6}  ({:.1}%)  [cap {}s — exceeded cap, NOT 'does not terminate']",
+                    pct(c, n),
+                    h.cap_secs
+                );
+            } else {
+                println!("  {label:<11} {c:>6}  ({:.1}%)", pct(c, n));
+            }
         }
     }
     if rej > 0 {
@@ -115,7 +139,10 @@ pub fn main(a: ReportArgs) -> Result<(), String> {
     let unfinished = dnf + crash;
     for t in a.at.split(',').filter_map(|s| s.trim().parse::<f64>().ok()) {
         if t > h.cap_secs as f64 {
-            println!("  at {t}s: REFUSED — above this run's own {}s cap", h.cap_secs);
+            println!(
+                "  at {t}s: REFUSED — above this run's own {}s cap",
+                h.cap_secs
+            );
             continue;
         }
         let slow = cases
@@ -132,10 +159,14 @@ pub fn main(a: ReportArgs) -> Result<(), String> {
     }
 
     // RULE 2: never print RSS without the thread pin.
-    println!("\n## peak RSS (threads = {})", match h.threads {
-        Some(t) => t.to_string(),
-        None => "UNPINNED — treat these numbers as this host's fan-out, not per-ontology cost".into(),
-    });
+    println!(
+        "\n## peak RSS (threads = {})",
+        match h.threads {
+            Some(t) => t.to_string(),
+            None => "UNPINNED — treat these numbers as this host's fan-out, not per-ontology cost"
+                .into(),
+        }
+    );
     let mut by_rss: Vec<&Case> = cases.iter().filter(|c| c.peak_rss_kb.is_some()).collect();
     by_rss.sort_by_key(|c| std::cmp::Reverse(c.peak_rss_kb.unwrap_or(0)));
     for c in by_rss.iter().take(a.top_rss) {
@@ -157,10 +188,15 @@ pub fn main(a: ReportArgs) -> Result<(), String> {
     }
 
     // The actionable cross-tab: cheap to convert, expensive to run = a local cause.
-    println!("\n## candidates: unfinished but SMALL input (local cause likelier than a search blowup)");
+    println!(
+        "\n## candidates: unfinished but SMALL input (local cause likelier than a search blowup)"
+    );
     let mut cands: Vec<&Case> = cases
         .iter()
-        .filter(|c| (c.outcome == "dnf" || c.outcome == "err_crash") && c.bytes.unwrap_or(u64::MAX) < 20_000_000)
+        .filter(|c| {
+            (c.outcome == "dnf" || c.outcome == "err_crash")
+                && c.bytes.unwrap_or(u64::MAX) < 20_000_000
+        })
         .collect();
     cands.sort_by_key(|c| std::cmp::Reverse(c.peak_rss_kb.unwrap_or(0)));
     if cands.is_empty() {
@@ -198,7 +234,11 @@ pub fn main(a: ReportArgs) -> Result<(), String> {
 }
 
 fn pct(a: usize, b: usize) -> f64 {
-    if b == 0 { 0.0 } else { a as f64 / b as f64 * 100.0 }
+    if b == 0 {
+        0.0
+    } else {
+        a as f64 / b as f64 * 100.0
+    }
 }
 fn gb(kb: u64) -> f64 {
     kb as f64 / 1_048_576.0

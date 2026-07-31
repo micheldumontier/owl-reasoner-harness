@@ -23,8 +23,20 @@ pub fn main(args: CompareArgs) -> Result<(), String> {
     let (hb, cb) = load(&args.b)?;
 
     println!("# compare");
-    println!("  A {}  sha {}  threads {:?} cap {}s", args.a.display(), &ha.sha256[..12.min(ha.sha256.len())], ha.threads, ha.cap_secs);
-    println!("  B {}  sha {}  threads {:?} cap {}s", args.b.display(), &hb.sha256[..12.min(hb.sha256.len())], hb.threads, hb.cap_secs);
+    println!(
+        "  A {}  sha {}  threads {:?} cap {}s",
+        args.a.display(),
+        &ha.sha256[..12.min(ha.sha256.len())],
+        ha.threads,
+        ha.cap_secs
+    );
+    println!(
+        "  B {}  sha {}  threads {:?} cap {}s",
+        args.b.display(),
+        &hb.sha256[..12.min(hb.sha256.len())],
+        hb.threads,
+        hb.cap_secs
+    );
 
     // Refuse to silently compare incomparable runs — differing pins or caps explain
     // most apparent "behaviour changes".
@@ -32,13 +44,22 @@ pub fn main(args: CompareArgs) -> Result<(), String> {
         println!("  !! IDENTICAL binaries: any difference below is noise or nondeterminism.");
     }
     if ha.threads != hb.threads {
-        println!("  !! DIFFERENT thread pins ({:?} vs {:?}): wall and RSS are NOT comparable.", ha.threads, hb.threads);
+        println!(
+            "  !! DIFFERENT thread pins ({:?} vs {:?}): wall and RSS are NOT comparable.",
+            ha.threads, hb.threads
+        );
     }
     if ha.cap_secs != hb.cap_secs {
-        println!("  !! DIFFERENT caps ({}s vs {}s): dnf counts are NOT comparable.", ha.cap_secs, hb.cap_secs);
+        println!(
+            "  !! DIFFERENT caps ({}s vs {}s): dnf counts are NOT comparable.",
+            ha.cap_secs, hb.cap_secs
+        );
     }
     if ha.args_template != hb.args_template {
-        println!("  !! DIFFERENT args ({:?} vs {:?}).", ha.args_template, hb.args_template);
+        println!(
+            "  !! DIFFERENT args ({:?} vs {:?}).",
+            ha.args_template, hb.args_template
+        );
     }
 
     let ia: HashMap<&str, &Case> = ca.iter().map(|c| (c.ont.as_str(), c)).collect();
@@ -108,15 +129,38 @@ pub fn main(args: CompareArgs) -> Result<(), String> {
         }
     }
 
-    println!("\n## wall (only where both completed, |delta| > {:.0}%)", args.wall_tol * 100.0);
-    faster.sort_by(|x, y| ((y.1 - y.2) / y.1).partial_cmp(&((x.1 - x.2) / x.1)).unwrap());
-    slower.sort_by(|x, y| ((y.2 - y.1) / y.1).partial_cmp(&((x.2 - x.1) / x.1)).unwrap());
+    println!(
+        "\n## wall (only where both completed, |delta| > {:.0}%)",
+        args.wall_tol * 100.0
+    );
+    faster.sort_by(|x, y| {
+        ((y.1 - y.2) / y.1)
+            .partial_cmp(&((x.1 - x.2) / x.1))
+            .unwrap()
+    });
+    slower.sort_by(|x, y| {
+        ((y.2 - y.1) / y.1)
+            .partial_cmp(&((x.2 - x.1) / x.1))
+            .unwrap()
+    });
     println!("  faster: {}   slower: {}", faster.len(), slower.len());
     for (o, p, q) in faster.iter().take(args.top) {
-        println!("    -{:>5.1}%  {:<20} {:>7.2}s -> {:>7.2}s", (p - q) / p * 100.0, o, p, q);
+        println!(
+            "    -{:>5.1}%  {:<20} {:>7.2}s -> {:>7.2}s",
+            (p - q) / p * 100.0,
+            o,
+            p,
+            q
+        );
     }
     for (o, p, q) in slower.iter().take(args.top) {
-        println!("    +{:>5.1}%  {:<20} {:>7.2}s -> {:>7.2}s", (q - p) / p * 100.0, o, p, q);
+        println!(
+            "    +{:>5.1}%  {:<20} {:>7.2}s -> {:>7.2}s",
+            (q - p) / p * 100.0,
+            o,
+            p,
+            q
+        );
     }
 
     let only_a = ia.keys().filter(|k| !ib.contains_key(*k)).count();
