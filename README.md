@@ -41,6 +41,13 @@ report  results.jsonl ──────────► summary.json + cases.csv
 compare run-a.jsonl run-b.jsonl ─► outcome deltas + answer-identity diff
 ```
 
+For **cross-reasoner** FP/MISSED (as opposed to same-reasoner byte-identity) see
+`scripts/normalise.py` and `REASONERS.md`. The `compare` verb above establishes answer
+identity from a raw stdout sha256, which is only meaningful between two runs of the *same*
+reasoner — four reasoners emit four formats whose bytes can never match. `normalise.py`
+reduces each to a sorted `sub<TAB>sup` closure and diffs those. It is gated on reproducing
+rustdl's committed FP=0 closure counts exactly (`normalise.py gate`, currently 11/11).
+
 - **The reasoner is a command, not a dependency.** It is invoked by path, so the harness can
   measure several builds of the same reasoner (`v0.4.5` vs `v0.4.6`, flag ON vs OFF) and other
   reasoners (Konclude, HermiT, ELK, whelk) with the same code. A harness compiled *inside* the

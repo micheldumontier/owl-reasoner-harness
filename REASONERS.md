@@ -42,15 +42,109 @@ are internal and must be dropped, the way rustdl filters synthetic `DKey` classe
 
 **Output formats differ and are not directly diffable.** Konclude writes an OWL/XML class
 hierarchy; HermiT writes `SubClassOf( <iri> <iri> )` lines; KM writes JSON keyed by class;
-rustdl writes `direct<TAB>sub<TAB>sup`. A cross-reasoner closure comparison needs a
-normaliser per format — the 2026-06-08 harness had one (`work/diff.py`), which is worth
-reusing rather than rewriting.
+rustdl writes `direct<TAB>sub<TAB>sup`. `scripts/normalise.py` (below) reconciles them.
+
+**`run-hermit.sh` needs an OUT argument to produce any output.** HermiT's `-c` writes to
+the `-o` path and never to stdout, so the original one-arg form (`-o /dev/null`) is
+timing-only. `run-hermit.sh ONT OUT` writes the taxonomy; the one-arg form is unchanged.
+
+# The output normaliser
+
+`scripts/normalise.py` — normalises each reasoner to a sorted set of `sub<TAB>sup` lines
+over named classes, then diffs two of them for FP/MISSED. Python, not a Rust subcommand:
+it reuses the shape of the 2026-06-08 `work/diff.py`, and the gate must be re-runnable
+without a rebuild of the system under test.
+
+```sh
+python3 scripts/normalise.py gate                  # THE GATE: 11/11 fixtures, exact
+python3 scripts/normalise.py selftest              # identity invariants (no corpus needed)
+scripts/cross-check.sh                             # 4 reasoners vs the Konclude oracle
+python3 scripts/normalise.py normalise --format konclude F.owx -o F.tsv
+python3 scripts/normalise.py normalise --format km  F.json --ontology SRC.ofn -o F.tsv
+python3 scripts/normalise.py compare CANDIDATE.tsv ORACLE.tsv
+```
+
+`compare` reports **FP** (candidate asserts, oracle lacks — soundness, must be 0) and
+**MISSED** (oracle has, candidate lacks — completeness), and exits nonzero on FP.
+Exclusion is symmetric: the union of both sides' unsatisfiable and Thing-equivalent
+classes is removed from both closures first, so a disagreement about *satisfiability* is
+reported as `unsat_disagreement` instead of masquerading as thousands of FPs. `normalise`
+therefore emits its own unsat / Thing-equivalent sets as `#unsat` / `#thing-equiv` sidecar
+lines, since a single-file pass cannot know the other side's.
+
+**This is complementary to, not a replacement for, the Rust `compare`.** The Rust verb
+checks answer identity by raw stdout sha256 — byte-identity, valid only for two runs of
+the *same* reasoner (build A/B, flag on/off). It cannot compare across reasoners because
+the bytes differ by format. Use the Rust `compare` for regression, this for cross-reasoner
+FP/MISSED.
+
+## What the normaliser decided, and why
+
+- **Relation: transitive closure.** Determined empirically on a 3-level probe, not
+  assumed: rustdl, Konclude *and* HermiT all emit the DIRECT (Hasse) relation; **KM emits
+  the full closure**. Closure is the only common target (direct→closure is total;
+  closure→direct presumes completeness, which is what is under test) and is the relation
+  rustdl's `oracle_diff::aligned_closures` counts, so the committed reference numbers are
+  closure counts.
+- **`owl:Thing`/`owl:Nothing`/reflexive: dropped**, in all three spellings that occur —
+  absolute IRI, bare relative `Thing` (ROBOT), and `abbreviatedIRI="owl:Thing"`. Konclude
+  emits `X ⊑ Thing`, HermiT does not; keeping them diffs output conventions, not logic.
+- **Equivalence groups: expanded to mutual subsumption.** Load-bearing, not cosmetic —
+  HermiT emits only ONE representative of a group in its edges (`E ⊑ C` with `D ≡ E`), so
+  without expansion `D ⊑ C` is lost. `≡ owl:Nothing` and `≡ owl:Thing` groups are instead
+  recorded as sidecar metadata and excluded.
+- **KM's Tseitin definers: a whitelist, never a regex.** Every KM name is checked against
+  the classes *declared in the source ontology* (hence `--ontology`), the same shape as
+  rustdl's `reportable_class_iris`. A `^Q_\d+$` blacklist would be wrong in both
+  directions, because **KM escapes legitimate source classes that look generated**: a real
+  class `Q_1` is emitted as `km_src_Q_1` while KM's own definer is the unescaped `Q_0`
+  (`engine/src/frontend/iri.rs::reserved_internal_prefix`). Measured on a probe declaring
+  `:Q_1`, un-escaping recovers 2 of 3 subsumptions that the plain whitelist dropped.
+  The whitelist doubles as the local-name→IRI map KM needs, since **KM reports bare local
+  names, not IRIs**.
+
+## Two bugs the count gate could not catch
+
+Closure *size* is invariant under relabelling, so `gate` can pass while every IRI is
+wrong. Both of these passed all 11 counts and were caught only by cross-reasoner identity
+(`cross-check.sh`) — which is why that script exists alongside the gate:
+
+1. **Unexpanded `abbreviatedIRI`.** wine's Konclude output carries 112 `food:*` abbreviated
+   classes; leaving them raw corrupted 344 pair-halves at an unchanged count of 653, and
+   showed up only as wine HermiT-vs-Konclude **FP=482**.
+2. **Unresolved relative IRIs.** Konclude writes the ontology's own classes as fragment
+   references (`<Class IRI="#AlsatianWine"/>`, 248 in wine). These must resolve against
+   `ontologyIRI`/`xml:base` to match HermiT's and rustdl's absolute IRIs — and, because
+   they start with `#`, they silently collided with this format's own comment sigil,
+   costing 481 of wine's 653 pairs on the `compare` path while `gate` still read 653.
+   `read_normalised` now hard-errors on a `#`-leading line that is not a known key.
 
 ## Not yet done
 
-- No cross-reasoner run has been made with these wrappers. The harness records a binary
-  fingerprint per run, so each reasoner's run will carry its own provenance header and
-  `compare` will warn if pins or caps differ.
-- The output normaliser (above) is the remaining piece before FP/MISSED can be computed
-  across reasoners rather than just wall/RSS.
+- The wrappers have now been cross-checked on the curated fixtures (see below), but no
+  full-corpus cross-reasoner *sweep* has been run.
+- KM is limited to small EL fixtures here: under its mandatory 20 GB cap it cannot
+  classify pizza, so `cross-check.sh` runs it on bibtex only.
 - ELK and whelk-rs are not provisioned; the 2026-07-11 curated MATRIX covered them.
+
+## Gate status (2026-08-01)
+
+`normalise.py gate` — normalised **Konclude** output vs rustdl's committed FP=0 closure
+counts. **11/11 exact**, no fixture absent:
+
+| galen | notgalen | sio | ore-10908 | wine | pizza | alehif | ro | ore-15672 | sulo | bibtex |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 27997 | 32739 | 8904 | 6001 | 653 | 499 | 247 | 158 | 142 | 51 | 16 |
+
+`cross-check.sh` — every reasoner vs the Konclude oracle, **FP=0 / MISSED=0 throughout**:
+
+| fixture | oracle | rustdl | HermiT | KM |
+|---|---|---|---|---|
+| bibtex | 16 | 0/0 | 0/0 | 0/0 |
+| pizza | 499 | 0/0 | 0/0 | capped |
+| ro | 158 | 0/0 | 0/0 | capped |
+| sulo | 51 | 0/0 | 0/0 | capped |
+| wine | 653 | 0/0 | 0/0 | capped |
+
+The gate is deliberately sensitive: mutating the closure step, the equivalence expansion,
+or the Thing policy each break it (measured: pizza 499→171, 499→474, 499→596).
