@@ -64,31 +64,49 @@ def declared_real_class(path: pathlib.Path, fmt: str) -> bool:
             return False
         subs = obj.get("subsumptions") or {}
         return any(k not in TRIVIAL for k in subs)
-    # Konclude/HermiT OWL-XML and rustdl text: look for any class name that is
-    # not one of the two trivial ones. Cheap and format-agnostic on purpose --
-    # the precise parse is the normaliser's job, and this must still answer for
-    # an output the normaliser rejects.
-    #
-    # SCOPED TO <Class> ELEMENTS DELIBERATELY. A bare /(?:IRI|abbreviatedIRI)="/
-    # scan matches the <Prefix name="" IRI="..."/> declarations that an EMPTY
-    # hierarchy also carries, so the 896-byte Thing/Nothing-only output read as
-    # CLASSIFIED. Caught by running the predicate against a junk file with a
-    # known answer -- which is why the validation set includes one.
+    # EVERY REASONER WRITES A DIFFERENT FORMAT, so this dispatches per format.
+    # A "cheap format-agnostic" version of this check was WRONG: it knew only
+    # OWL/XML and tab-separated text, so HermiT's functional-syntax taxonomy --
+    # a 4 MB file of SubClassOf( <iri> <iri> ) lines -- read as EMPTY, and 110
+    # of 192 HermiT runs were misreported as front-end failures. Both that bug
+    # and the earlier <Prefix IRI=...> bug were mine, not the reasoner's, so
+    # each format arm below is validated against a known-answer case.
     import re
 
-    for m in re.finditer(r'<Class\s+(?:IRI|abbreviatedIRI)="([^"]+)"', text):
-        name = m.group(1)
-        if name in TRIVIAL:
-            continue
-        if name.endswith("#Thing") or name.endswith("#Nothing"):
-            continue
-        return True
-    for line in text.splitlines():
-        if line.startswith("#") or not line.strip():
-            continue
-        if "\t" in line:
-            return True
-    return False
+    def nontrivial(name: str) -> bool:
+        return (
+            name not in TRIVIAL
+            and not name.endswith("#Thing")
+            and not name.endswith("#Nothing")
+        )
+
+    if fmt == "konclude":
+        # OWL/XML. SCOPED TO <Class> ELEMENTS: a bare /(?:IRI|abbreviatedIRI)="/
+        # scan also matches the <Prefix name="" IRI="..."/> declarations that an
+        # EMPTY hierarchy carries, so the 896-byte Thing/Nothing-only output read
+        # as CLASSIFIED.
+        return any(
+            nontrivial(m.group(1))
+            for m in re.finditer(r'<Class\s+(?:IRI|abbreviatedIRI)="([^"]+)"', text)
+        )
+
+    if fmt == "hermit":
+        # OWL functional syntax, one axiom per line, IRIs in angle brackets.
+        # EquivalentClasses counts: a group of >=2 named classes is a real result.
+        for m in re.finditer(
+            r"^\s*(?:SubClassOf|EquivalentClasses)\(\s*(.+?)\s*\)\s*$", text, re.M
+        ):
+            names = re.findall(r"<([^>]+)>", m.group(1))
+            if sum(1 for n in names if nontrivial(n)) >= 1 and len(names) >= 2:
+                return True
+        return False
+
+    if fmt == "rustdl":
+        return any(
+            "\t" in ln for ln in text.splitlines() if ln.strip() and not ln.startswith("#")
+        )
+
+    raise ValueError(f"no content predicate for format {fmt!r}")
 
 
 def closure_pairs(path: pathlib.Path, fmt: str, ontology: pathlib.Path | None):
