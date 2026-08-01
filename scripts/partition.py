@@ -103,7 +103,17 @@ def main() -> int:
         row["solvers"] = solvers
         row["set"] = "A" if solvers else "B"
         # Disagreement flag: >=2 peers classified and their closure sizes differ.
+        #
+        # DELIBERATELY ONE-SIDED. Differing sizes prove disagreement; EQUAL sizes prove
+        # nothing, because closure size is invariant under relabelling -- two normaliser
+        # bugs in this very repo (unexpanded abbreviatedIRI, unresolved relative IRIs)
+        # each corrupted hundreds of pairs while leaving the count untouched. So this
+        # flag is a cheap LOWER BOUND on Set C, computable for all 257, and the members
+        # it finds are real. The actual set-difference (normalise.py compare, on the
+        # retained hierarchies) is what establishes the true Set C, and is affordable
+        # only because Set A is smaller than 257.
         row["disagree"] = len(set(sizes.values())) > 1 if len(sizes) >= 2 else False
+        row["disagree_basis"] = "size-only (lower bound)" if len(sizes) >= 2 else "n/a"
         # Front-end failure is recorded, never silently absorbed into A or B.
         row["frontend_fail"] = [
             pk for pk in present if row.get(pk) in ("EMPTY", "NO_OUTPUT")
@@ -123,7 +133,10 @@ def main() -> int:
         print(f"  {pk:9s} {dict(coverage[pk])}")
     print(f"\nSet A (>=1 peer CLASSIFIED)  = {len(setA)}")
     print(f"Set B (no peer CLASSIFIED)   = {tally['B']}")
-    print(f"Set C (peers disagree)       = {tally['C(disagree)']}   [orthogonal flag]")
+    print(
+        f"Set C (peers disagree)       = {tally['C(disagree)']}   [orthogonal flag; "
+        f"LOWER BOUND -- size-only, run normalise.py compare for the true set]"
+    )
     ff = sum(1 for r in table if r["frontend_fail"])
     print(f"  of which >=1 peer FRONT-END failed (EMPTY/NO_OUTPUT): {ff}")
 
