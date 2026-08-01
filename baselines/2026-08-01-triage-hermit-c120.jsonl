@@ -1,0 +1,257 @@
+{"ont": "ore_ont_10006", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 99.98, "rss_kb": 30776, "out_bytes": 4084512, "pairs": 204418}
+{"ont": "ore_ont_10008", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 10.55, "rss_kb": 31024, "out_bytes": 5889143, "pairs": 133855}
+{"ont": "ore_ont_10019", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.43, "rss_kb": 30492, "out_bytes": 6793, "pairs": 162}
+{"ont": "ore_ont_10080", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.52, "rss_kb": 31460, "out_bytes": 0}
+{"ont": "ore_ont_10109", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.49, "rss_kb": 30656, "out_bytes": 30196, "pairs": 481}
+{"ont": "ore_ont_10125", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 68.58, "rss_kb": 31056, "out_bytes": 10436456, "pairs": 1111855}
+{"ont": "ore_ont_10136", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 18.13, "rss_kb": 30680, "out_bytes": 4198146, "pairs": 337026}
+{"ont": "ore_ont_10140", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.56, "rss_kb": 31916, "out_bytes": 0}
+{"ont": "ore_ont_1028", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.53, "rss_kb": 31416, "out_bytes": 0}
+{"ont": "ore_ont_10407", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.41, "rss_kb": 30416, "out_bytes": 3164, "pairs": 8}
+{"ont": "ore_ont_10460", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 4.69, "rss_kb": 32108, "out_bytes": 62294, "pairs": 2859}
+{"ont": "ore_ont_10517", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 10.39, "rss_kb": 31956, "out_bytes": 113509, "pairs": 2187}
+{"ont": "ore_ont_10568", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 123.15, "rss_kb": 31160, "out_bytes": 0}
+{"ont": "ore_ont_1059", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 47.79, "rss_kb": 30960, "out_bytes": 5433490, "pairs": 405665}
+{"ont": "ore_ont_10621", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.75, "rss_kb": 31796, "out_bytes": 0}
+{"ont": "ore_ont_1066", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.65, "rss_kb": 31600, "out_bytes": 0}
+{"ont": "ore_ont_10807", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 3.56, "rss_kb": 31120, "out_bytes": 102179, "pairs": 4789}
+{"ont": "ore_ont_10926", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.83, "rss_kb": 31812, "out_bytes": 0}
+{"ont": "ore_ont_10929", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 22.38, "rss_kb": 30444, "out_bytes": 161, "pairs": 1}
+{"ont": "ore_ont_10930", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 9.17, "rss_kb": 30948, "out_bytes": 4073485, "pairs": 107078}
+{"ont": "ore_ont_10949", "reasoner": "hermit", "verdict": "NO_OUTPUT", "harness_outcome": "err_reject", "wall_s": 3.96, "rss_kb": 30644, "out_bytes": 0}
+{"ont": "ore_ont_11005", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.51, "rss_kb": 31576, "out_bytes": 0}
+{"ont": "ore_ont_11037", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 31.13, "rss_kb": 31336, "out_bytes": 5215510, "pairs": 604689}
+{"ont": "ore_ont_11085", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 24.55, "rss_kb": 31584, "out_bytes": 2248701, "pairs": 31696}
+{"ont": "ore_ont_11196", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.71, "rss_kb": 31896, "out_bytes": 0}
+{"ont": "ore_ont_1123", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.48, "rss_kb": 31556, "out_bytes": 0}
+{"ont": "ore_ont_11270", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.63, "rss_kb": 31336, "out_bytes": 0}
+{"ont": "ore_ont_11282", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 6.66, "rss_kb": 30384, "out_bytes": 3225331, "pairs": 45221}
+{"ont": "ore_ont_11311", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.58, "rss_kb": 31936, "out_bytes": 0}
+{"ont": "ore_ont_11315", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 38.98, "rss_kb": 30672, "out_bytes": 5239425, "pairs": 415917}
+{"ont": "ore_ont_11457", "reasoner": "hermit", "verdict": "NO_OUTPUT", "harness_outcome": "err_reject", "wall_s": 9.38, "rss_kb": 31708, "out_bytes": 0}
+{"ont": "ore_ont_11460", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.66, "rss_kb": 32100, "out_bytes": 0}
+{"ont": "ore_ont_11495", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 44.88, "rss_kb": 30744, "out_bytes": 5605839, "pairs": 411473}
+{"ont": "ore_ont_11500", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 7.26, "rss_kb": 31588, "out_bytes": 2246997, "pairs": 57893}
+{"ont": "ore_ont_11553", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 121.09, "rss_kb": 31932, "out_bytes": 0}
+{"ont": "ore_ont_11629", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.88, "rss_kb": 31640, "out_bytes": 0}
+{"ont": "ore_ont_11695", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.6, "rss_kb": 31816, "out_bytes": 0}
+{"ont": "ore_ont_11745", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.83, "rss_kb": 31348, "out_bytes": 0}
+{"ont": "ore_ont_11899", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 39.47, "rss_kb": 31004, "out_bytes": 5245019, "pairs": 416481}
+{"ont": "ore_ont_1194", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.82, "rss_kb": 31256, "out_bytes": 0}
+{"ont": "ore_ont_1199", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.85, "rss_kb": 31620, "out_bytes": 0}
+{"ont": "ore_ont_12012", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 14.25, "rss_kb": 30616, "out_bytes": 8121197, "pairs": 338043}
+{"ont": "ore_ont_12087", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 23.69, "rss_kb": 30864, "out_bytes": 14769612, "pairs": 395702}
+{"ont": "ore_ont_12128", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.8, "rss_kb": 31660, "out_bytes": 0}
+{"ont": "ore_ont_12208", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.64, "rss_kb": 31384, "out_bytes": 0}
+{"ont": "ore_ont_12317", "reasoner": "hermit", "verdict": "EMPTY", "harness_outcome": "ok", "wall_s": 6.77, "rss_kb": 31296, "out_bytes": 1}
+{"ont": "ore_ont_12351", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 68.71, "rss_kb": 30888, "out_bytes": 10455132, "pairs": 1112577}
+{"ont": "ore_ont_12432", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 9.03, "rss_kb": 30560, "out_bytes": 418439, "pairs": 28193}
+{"ont": "ore_ont_12451", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.67, "rss_kb": 31660, "out_bytes": 0}
+{"ont": "ore_ont_12567", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.92, "rss_kb": 31660, "out_bytes": 0}
+{"ont": "ore_ont_1272", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 9.41, "rss_kb": 31792, "out_bytes": 5085078, "pairs": 180254}
+{"ont": "ore_ont_12723", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 5.23, "rss_kb": 29988, "out_bytes": 159608, "pairs": 9250}
+{"ont": "ore_ont_12743", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.83, "rss_kb": 32052, "out_bytes": 0}
+{"ont": "ore_ont_12985", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 14.44, "rss_kb": 31984, "out_bytes": 8694037, "pairs": 219799}
+{"ont": "ore_ont_12993", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 74.61, "rss_kb": 30712, "out_bytes": 17506313, "pairs": 590682}
+{"ont": "ore_ont_13071", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 8.21, "rss_kb": 30524, "out_bytes": 2785016, "pairs": 115134}
+{"ont": "ore_ont_1310", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 7.79, "rss_kb": 30872, "out_bytes": 2563243, "pairs": 35710}
+{"ont": "ore_ont_13103", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.55, "rss_kb": 31688, "out_bytes": 0}
+{"ont": "ore_ont_13122", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 31.56, "rss_kb": 30588, "out_bytes": 1151264, "pairs": 15947}
+{"ont": "ore_ont_13136", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 105.71, "rss_kb": 31276, "out_bytes": 1074984, "pairs": 64492}
+{"ont": "ore_ont_13220", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 9.26, "rss_kb": 31392, "out_bytes": 3227165, "pairs": 45248}
+{"ont": "ore_ont_13229", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.73, "rss_kb": 31460, "out_bytes": 0}
+{"ont": "ore_ont_13242", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.73, "rss_kb": 32020, "out_bytes": 0}
+{"ont": "ore_ont_13276", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.58, "rss_kb": 31732, "out_bytes": 0}
+{"ont": "ore_ont_13545", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 6.24, "rss_kb": 31696, "out_bytes": 251915, "pairs": 22498}
+{"ont": "ore_ont_13708", "reasoner": "hermit", "verdict": "NO_OUTPUT", "harness_outcome": "err_reject", "wall_s": 9.18, "rss_kb": 30600, "out_bytes": 0}
+{"ont": "ore_ont_13846", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 62.66, "rss_kb": 31124, "out_bytes": 4970993, "pairs": 720228}
+{"ont": "ore_ont_13859", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 10.32, "rss_kb": 31988, "out_bytes": 98568, "pairs": 6264}
+{"ont": "ore_ont_13928", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.58, "rss_kb": 31920, "out_bytes": 0}
+{"ont": "ore_ont_14012", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.55, "rss_kb": 31412, "out_bytes": 0}
+{"ont": "ore_ont_14025", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 9.38, "rss_kb": 31532, "out_bytes": 1863368, "pairs": 87916}
+{"ont": "ore_ont_14223", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 6.75, "rss_kb": 31088, "out_bytes": 892520, "pairs": 65730}
+{"ont": "ore_ont_14272", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.4, "rss_kb": 30344, "out_bytes": 89498, "pairs": 4137}
+{"ont": "ore_ont_14551", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.44, "rss_kb": 31480, "out_bytes": 0}
+{"ont": "ore_ont_14572", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.62, "rss_kb": 31224, "out_bytes": 0}
+{"ont": "ore_ont_14742", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.78, "rss_kb": 31776, "out_bytes": 0}
+{"ont": "ore_ont_14776", "reasoner": "hermit", "verdict": "EMPTY", "harness_outcome": "ok", "wall_s": 6.56, "rss_kb": 31388, "out_bytes": 1}
+{"ont": "ore_ont_14817", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.59, "rss_kb": 31420, "out_bytes": 0}
+{"ont": "ore_ont_14861", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 16.73, "rss_kb": 31640, "out_bytes": 3762991, "pairs": 258582}
+{"ont": "ore_ont_14879", "reasoner": "hermit", "verdict": "EMPTY", "harness_outcome": "ok", "wall_s": 7.57, "rss_kb": 31472, "out_bytes": 1}
+{"ont": "ore_ont_14881", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 11.09, "rss_kb": 31568, "out_bytes": 3041351, "pairs": 206269}
+{"ont": "ore_ont_14897", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 14.21, "rss_kb": 30568, "out_bytes": 644100, "pairs": 33775}
+{"ont": "ore_ont_15074", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.53, "rss_kb": 31416, "out_bytes": 0}
+{"ont": "ore_ont_1508", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 54.94, "rss_kb": 31076, "out_bytes": 1413609, "pairs": 92922}
+{"ont": "ore_ont_15203", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.96, "rss_kb": 32104, "out_bytes": 0}
+{"ont": "ore_ont_15226", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.77, "rss_kb": 32056, "out_bytes": 0}
+{"ont": "ore_ont_15249", "reasoner": "hermit", "verdict": "EMPTY", "harness_outcome": "ok", "wall_s": 9.42, "rss_kb": 31452, "out_bytes": 1}
+{"ont": "ore_ont_15344", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.56, "rss_kb": 31664, "out_bytes": 0}
+{"ont": "ore_ont_15418", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.62, "rss_kb": 31300, "out_bytes": 0}
+{"ont": "ore_ont_15526", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 5.38, "rss_kb": 30160, "out_bytes": 162072, "pairs": 9397}
+{"ont": "ore_ont_15623", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 65.22, "rss_kb": 31848, "out_bytes": 277315, "pairs": 8544}
+{"ont": "ore_ont_15635", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 21.11, "rss_kb": 30560, "out_bytes": 39473, "pairs": 849}
+{"ont": "ore_ont_15655", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 86.11, "rss_kb": 32100, "out_bytes": 109971, "pairs": 9589}
+{"ont": "ore_ont_15687", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 140.03, "rss_kb": 31800, "out_bytes": 0}
+{"ont": "ore_ont_15695", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 121.32, "rss_kb": 31508, "out_bytes": 0}
+{"ont": "ore_ont_15703", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 67.82, "rss_kb": 30324, "out_bytes": 42371632, "pairs": 1604386}
+{"ont": "ore_ont_15733", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 29.53, "rss_kb": 30312, "out_bytes": 1082343, "pairs": 77911}
+{"ont": "ore_ont_15803", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.85, "rss_kb": 31436, "out_bytes": 0}
+{"ont": "ore_ont_16056", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.44, "rss_kb": 31520, "out_bytes": 0}
+{"ont": "ore_ont_16184", "reasoner": "hermit", "verdict": "NO_OUTPUT", "harness_outcome": "err_reject", "wall_s": 7.62, "rss_kb": 31636, "out_bytes": 0}
+{"ont": "ore_ont_16283", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 6.48, "rss_kb": 30596, "out_bytes": 2250786, "pairs": 57877}
+{"ont": "ore_ont_16286", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 29.87, "rss_kb": 30348, "out_bytes": 14070253, "pairs": 231113}
+{"ont": "ore_ont_1634", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.48, "rss_kb": 31680, "out_bytes": 0}
+{"ont": "ore_ont_16371", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.6, "rss_kb": 30620, "out_bytes": 97979, "pairs": 4491}
+{"ont": "ore_ont_16372", "reasoner": "hermit", "verdict": "NO_OUTPUT", "harness_outcome": "err_reject", "wall_s": 2.8, "rss_kb": 31508, "out_bytes": 0}
+{"ont": "ore_ont_16444", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 59.92, "rss_kb": 31932, "out_bytes": 9538812, "pairs": 1189232}
+{"ont": "ore_ont_16462", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.8, "rss_kb": 31508, "out_bytes": 0}
+{"ont": "ore_ont_16481", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 5.21, "rss_kb": 30652, "out_bytes": 12717, "pairs": 351}
+{"ont": "ore_ont_16519", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 14.6, "rss_kb": 30552, "out_bytes": 9884520, "pairs": 233539}
+{"ont": "ore_ont_16586", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 48.7, "rss_kb": 31024, "out_bytes": 9833675, "pairs": 367152}
+{"ont": "ore_ont_16596", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 26.01, "rss_kb": 30604, "out_bytes": 9833675, "pairs": 367152}
+{"ont": "ore_ont_16680", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 121.01, "rss_kb": 31716, "out_bytes": 0}
+{"ont": "ore_ont_1673", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.98, "rss_kb": 32000, "out_bytes": 0}
+{"ont": "ore_ont_16744", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.9, "rss_kb": 31204, "out_bytes": 0}
+{"ont": "ore_ont_1707", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 11.04, "rss_kb": 31156, "out_bytes": 134968, "pairs": 8350}
+{"ont": "ore_ont_1820", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 16.21, "rss_kb": 30820, "out_bytes": 3710444, "pairs": 172493}
+{"ont": "ore_ont_1833", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 4.99, "rss_kb": 32096, "out_bytes": 26280, "pairs": 603}
+{"ont": "ore_ont_1938", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.78, "rss_kb": 31400, "out_bytes": 0}
+{"ont": "ore_ont_1958", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 4.18, "rss_kb": 30316, "out_bytes": 70908, "pairs": 2796}
+{"ont": "ore_ont_1966", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 9.43, "rss_kb": 30480, "out_bytes": 2757412, "pairs": 217301}
+{"ont": "ore_ont_20", "reasoner": "hermit", "verdict": "NO_OUTPUT", "harness_outcome": "err_reject", "wall_s": 13.92, "rss_kb": 31884, "out_bytes": 0}
+{"ont": "ore_ont_205", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 53.76, "rss_kb": 30512, "out_bytes": 725540, "pairs": 38638}
+{"ont": "ore_ont_2082", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 18.45, "rss_kb": 30520, "out_bytes": 6838941, "pairs": 250538}
+{"ont": "ore_ont_2111", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 32.98, "rss_kb": 30540, "out_bytes": 6597494, "pairs": 661147}
+{"ont": "ore_ont_2121", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 121.44, "rss_kb": 31556, "out_bytes": 0}
+{"ont": "ore_ont_2134", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 14.09, "rss_kb": 30564, "out_bytes": 9895255, "pairs": 233454}
+{"ont": "ore_ont_2182", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 5.16, "rss_kb": 30504, "out_bytes": 12276, "pairs": 287}
+{"ont": "ore_ont_2302", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 41.56, "rss_kb": 30676, "out_bytes": 6631225, "pairs": 507351}
+{"ont": "ore_ont_239", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.65, "rss_kb": 31456, "out_bytes": 0}
+{"ont": "ore_ont_2415", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 13.11, "rss_kb": 30436, "out_bytes": 3761220, "pairs": 314278}
+{"ont": "ore_ont_2504", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 15.26, "rss_kb": 31760, "out_bytes": 1587239, "pairs": 117795}
+{"ont": "ore_ont_2574", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.76, "rss_kb": 31732, "out_bytes": 0}
+{"ont": "ore_ont_2577", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 98.39, "rss_kb": 30648, "out_bytes": 4085970, "pairs": 204508}
+{"ont": "ore_ont_2632", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 108.88, "rss_kb": 30548, "out_bytes": 2951702, "pairs": 183266}
+{"ont": "ore_ont_2738", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 121.08, "rss_kb": 31856, "out_bytes": 0}
+{"ont": "ore_ont_2820", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 13.62, "rss_kb": 30768, "out_bytes": 3465829, "pairs": 162197}
+{"ont": "ore_ont_283", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 12.46, "rss_kb": 31120, "out_bytes": 3178693, "pairs": 29707}
+{"ont": "ore_ont_2874", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 121.18, "rss_kb": 31656, "out_bytes": 0}
+{"ont": "ore_ont_2901", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 4.67, "rss_kb": 31860, "out_bytes": 75549, "pairs": 5281}
+{"ont": "ore_ont_3080", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.57, "rss_kb": 31676, "out_bytes": 0}
+{"ont": "ore_ont_3215", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.54, "rss_kb": 31428, "out_bytes": 0}
+{"ont": "ore_ont_3237", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 9.02, "rss_kb": 30564, "out_bytes": 2533442, "pairs": 162107}
+{"ont": "ore_ont_3250", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.23, "rss_kb": 30256, "out_bytes": 10458, "pairs": 113}
+{"ont": "ore_ont_3274", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 25.51, "rss_kb": 30552, "out_bytes": 14788348, "pairs": 396406}
+{"ont": "ore_ont_3281", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.78, "rss_kb": 31212, "out_bytes": 16424, "pairs": 907}
+{"ont": "ore_ont_3282", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.64, "rss_kb": 31392, "out_bytes": 0}
+{"ont": "ore_ont_3414", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 13.28, "rss_kb": 31320, "out_bytes": 6608275, "pairs": 505533}
+{"ont": "ore_ont_345", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.91, "rss_kb": 31500, "out_bytes": 0}
+{"ont": "ore_ont_3508", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 9.72, "rss_kb": 30492, "out_bytes": 6952084, "pairs": 288907}
+{"ont": "ore_ont_3524", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 74.67, "rss_kb": 31852, "out_bytes": 42371632, "pairs": 1604386}
+{"ont": "ore_ont_3575", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 124.4, "rss_kb": 31920, "out_bytes": 0}
+{"ont": "ore_ont_3733", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 36.51, "rss_kb": 30684, "out_bytes": 7683647, "pairs": 867528}
+{"ont": "ore_ont_3794", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.77, "rss_kb": 31476, "out_bytes": 0}
+{"ont": "ore_ont_4141", "reasoner": "hermit", "verdict": "NO_OUTPUT", "harness_outcome": "err_reject", "wall_s": 5.13, "rss_kb": 30568, "out_bytes": 0}
+{"ont": "ore_ont_4205", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 50.62, "rss_kb": 31512, "out_bytes": 9833675, "pairs": 367152}
+{"ont": "ore_ont_4208", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.55, "rss_kb": 31640, "out_bytes": 0}
+{"ont": "ore_ont_4412", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 77.14, "rss_kb": 30808, "out_bytes": 8888480, "pairs": 1032372}
+{"ont": "ore_ont_4487", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 8.85, "rss_kb": 30520, "out_bytes": 4677102, "pairs": 110066}
+{"ont": "ore_ont_4572", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 14.49, "rss_kb": 31300, "out_bytes": 5279, "pairs": 31}
+{"ont": "ore_ont_4598", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 24.48, "rss_kb": 30812, "out_bytes": 5915637, "pairs": 428996}
+{"ont": "ore_ont_4604", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.7, "rss_kb": 31864, "out_bytes": 0}
+{"ont": "ore_ont_4669", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 121.06, "rss_kb": 31240, "out_bytes": 0}
+{"ont": "ore_ont_4782", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 9.94, "rss_kb": 30896, "out_bytes": 5371642, "pairs": 144565}
+{"ont": "ore_ont_4796", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.59, "rss_kb": 31760, "out_bytes": 0}
+{"ont": "ore_ont_4827", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.66, "rss_kb": 31320, "out_bytes": 107383, "pairs": 5463}
+{"ont": "ore_ont_4903", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 121.41, "rss_kb": 31404, "out_bytes": 0}
+{"ont": "ore_ont_4952", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 14.86, "rss_kb": 30836, "out_bytes": 4043294, "pairs": 187618}
+{"ont": "ore_ont_5141", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 73.21, "rss_kb": 30648, "out_bytes": 17898659, "pairs": 603959}
+{"ont": "ore_ont_5162", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.68, "rss_kb": 32352, "out_bytes": 0}
+{"ont": "ore_ont_5218", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.74, "rss_kb": 31352, "out_bytes": 0}
+{"ont": "ore_ont_5260", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 96.48, "rss_kb": 30924, "out_bytes": 917194, "pairs": 60970}
+{"ont": "ore_ont_5289", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.55, "rss_kb": 32044, "out_bytes": 0}
+{"ont": "ore_ont_5368", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 4.68, "rss_kb": 30372, "out_bytes": 731989, "pairs": 36747}
+{"ont": "ore_ont_5438", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 29.59, "rss_kb": 30452, "out_bytes": 1239037, "pairs": 73427}
+{"ont": "ore_ont_5548", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.6, "rss_kb": 31788, "out_bytes": 0}
+{"ont": "ore_ont_5566", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 19.52, "rss_kb": 30544, "out_bytes": 12707226, "pairs": 296151}
+{"ont": "ore_ont_5764", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 3.07, "rss_kb": 31800, "out_bytes": 114767, "pairs": 5678}
+{"ont": "ore_ont_5849", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.58, "rss_kb": 31580, "out_bytes": 0}
+{"ont": "ore_ont_5857", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.93, "rss_kb": 31640, "out_bytes": 0}
+{"ont": "ore_ont_5964", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 4.2, "rss_kb": 32340, "out_bytes": 73681, "pairs": 4385}
+{"ont": "ore_ont_6108", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 8.7, "rss_kb": 30144, "out_bytes": 2703886, "pairs": 196620}
+{"ont": "ore_ont_6132", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 4.96, "rss_kb": 30580, "out_bytes": 46916, "pairs": 707}
+{"ont": "ore_ont_6134", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.88, "rss_kb": 31772, "out_bytes": 0}
+{"ont": "ore_ont_6333", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.41, "rss_kb": 31708, "out_bytes": 0}
+{"ont": "ore_ont_6485", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.48, "rss_kb": 30508, "out_bytes": 12961, "pairs": 240}
+{"ont": "ore_ont_6608", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.5, "rss_kb": 31284, "out_bytes": 0}
+{"ont": "ore_ont_6627", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.61, "rss_kb": 31840, "out_bytes": 0}
+{"ont": "ore_ont_6664", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 7.95, "rss_kb": 31556, "out_bytes": 4300978, "pairs": 37236}
+{"ont": "ore_ont_6682", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 104.02, "rss_kb": 30876, "out_bytes": 16331991, "pairs": 700684}
+{"ont": "ore_ont_6712", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 37.62, "rss_kb": 30592, "out_bytes": 8217790, "pairs": 341768}
+{"ont": "ore_ont_6726", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 9.63, "rss_kb": 31644, "out_bytes": 5697179, "pairs": 48324}
+{"ont": "ore_ont_6896", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 17.76, "rss_kb": 31732, "out_bytes": 9231743, "pairs": 317512}
+{"ont": "ore_ont_6910", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 91.36, "rss_kb": 31832, "out_bytes": 1611512, "pairs": 115276}
+{"ont": "ore_ont_6923", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.75, "rss_kb": 30496, "out_bytes": 110778, "pairs": 5236}
+{"ont": "ore_ont_6952", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.49, "rss_kb": 31404, "out_bytes": 0}
+{"ont": "ore_ont_7011", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 3.15, "rss_kb": 31016, "out_bytes": 25343, "pairs": 1209}
+{"ont": "ore_ont_7111", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.53, "rss_kb": 31604, "out_bytes": 0}
+{"ont": "ore_ont_7127", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 57.25, "rss_kb": 30648, "out_bytes": 9765180, "pairs": 996775}
+{"ont": "ore_ont_7174", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 27.39, "rss_kb": 30816, "out_bytes": 1082343, "pairs": 77911}
+{"ont": "ore_ont_7192", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.75, "rss_kb": 31444, "out_bytes": 0}
+{"ont": "ore_ont_7204", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 12.72, "rss_kb": 30708, "out_bytes": 3097204, "pairs": 133195}
+{"ont": "ore_ont_7246", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.66, "rss_kb": 31696, "out_bytes": 0}
+{"ont": "ore_ont_7340", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 21.03, "rss_kb": 30508, "out_bytes": 13720130, "pairs": 135958}
+{"ont": "ore_ont_7361", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.63, "rss_kb": 31324, "out_bytes": 0}
+{"ont": "ore_ont_7370", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 23.49, "rss_kb": 30788, "out_bytes": 13984362, "pairs": 389455}
+{"ont": "ore_ont_7401", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 8.08, "rss_kb": 31468, "out_bytes": 2554167, "pairs": 35586}
+{"ont": "ore_ont_7409", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.67, "rss_kb": 31748, "out_bytes": 0}
+{"ont": "ore_ont_7416", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 8.9, "rss_kb": 30664, "out_bytes": 2531856, "pairs": 195531}
+{"ont": "ore_ont_7499", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 48.89, "rss_kb": 30476, "out_bytes": 698304, "pairs": 36145}
+{"ont": "ore_ont_7507", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.82, "rss_kb": 31672, "out_bytes": 0}
+{"ont": "ore_ont_7557", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.75, "rss_kb": 31648, "out_bytes": 0}
+{"ont": "ore_ont_7567", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 17.1, "rss_kb": 31860, "out_bytes": 9212674, "pairs": 317486}
+{"ont": "ore_ont_7581", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.83, "rss_kb": 31948, "out_bytes": 0}
+{"ont": "ore_ont_7646", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.87, "rss_kb": 31508, "out_bytes": 0}
+{"ont": "ore_ont_7706", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 6.35, "rss_kb": 30548, "out_bytes": 1161833, "pairs": 46968}
+{"ont": "ore_ont_7712", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 83.64, "rss_kb": 31284, "out_bytes": 916888, "pairs": 60918}
+{"ont": "ore_ont_7728", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 13.54, "rss_kb": 31712, "out_bytes": 9390107, "pairs": 216136}
+{"ont": "ore_ont_7729", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.61, "rss_kb": 31252, "out_bytes": 0}
+{"ont": "ore_ont_7803", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 10.88, "rss_kb": 31492, "out_bytes": 2763974, "pairs": 205902}
+{"ont": "ore_ont_7828", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 4.05, "rss_kb": 31932, "out_bytes": 101389, "pairs": 4804}
+{"ont": "ore_ont_7868", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 57.04, "rss_kb": 31164, "out_bytes": 11624846, "pairs": 1214993}
+{"ont": "ore_ont_7908", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 24.04, "rss_kb": 30784, "out_bytes": 9833675, "pairs": 367152}
+{"ont": "ore_ont_7914", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.57, "rss_kb": 32008, "out_bytes": 0}
+{"ont": "ore_ont_7956", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 38.24, "rss_kb": 30600, "out_bytes": 5436695, "pairs": 499893}
+{"ont": "ore_ont_8194", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 22.0, "rss_kb": 30816, "out_bytes": 3729382, "pairs": 453112}
+{"ont": "ore_ont_8273", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 13.02, "rss_kb": 30368, "out_bytes": 52056, "pairs": 1925}
+{"ont": "ore_ont_8388", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 14.59, "rss_kb": 31948, "out_bytes": 3968715, "pairs": 162716}
+{"ont": "ore_ont_8429", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.71, "rss_kb": 30388, "out_bytes": 108582, "pairs": 5049}
+{"ont": "ore_ont_8441", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 28.46, "rss_kb": 30624, "out_bytes": 1082343, "pairs": 77911}
+{"ont": "ore_ont_8445", "reasoner": "hermit", "verdict": "NO_OUTPUT", "harness_outcome": "err_reject", "wall_s": 8.41, "rss_kb": 30556, "out_bytes": 0}
+{"ont": "ore_ont_8470", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 6.23, "rss_kb": 31692, "out_bytes": 2253072, "pairs": 58166}
+{"ont": "ore_ont_8475", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.62, "rss_kb": 31652, "out_bytes": 0}
+{"ont": "ore_ont_8666", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.34, "rss_kb": 30808, "out_bytes": 9152, "pairs": 131}
+{"ont": "ore_ont_8671", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 19.95, "rss_kb": 31412, "out_bytes": 5170386, "pairs": 284770}
+{"ont": "ore_ont_8737", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.94, "rss_kb": 31656, "out_bytes": 0}
+{"ont": "ore_ont_8982", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 17.14, "rss_kb": 31556, "out_bytes": 12003750, "pairs": 293635}
+{"ont": "ore_ont_9027", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 97.39, "rss_kb": 30452, "out_bytes": 15589114, "pairs": 667615}
+{"ont": "ore_ont_904", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 3.6, "rss_kb": 32100, "out_bytes": 1282938, "pairs": 41164}
+{"ont": "ore_ont_934", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.38, "rss_kb": 31328, "out_bytes": 0}
+{"ont": "ore_ont_9429", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.41, "rss_kb": 31824, "out_bytes": 0}
+{"ont": "ore_ont_9540", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 18.58, "rss_kb": 30516, "out_bytes": 7948, "pairs": 71}
+{"ont": "ore_ont_9545", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 6.82, "rss_kb": 30496, "out_bytes": 2230542, "pairs": 57893}
+{"ont": "ore_ont_955", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.53, "rss_kb": 31688, "out_bytes": 0}
+{"ont": "ore_ont_9663", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.66, "rss_kb": 31528, "out_bytes": 0}
+{"ont": "ore_ont_9684", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 14.82, "rss_kb": 31080, "out_bytes": 679457, "pairs": 35071}
+{"ont": "ore_ont_9724", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.57, "rss_kb": 31812, "out_bytes": 0}
+{"ont": "ore_ont_9739", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.55, "rss_kb": 31892, "out_bytes": 0}
+{"ont": "ore_ont_9791", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.7, "rss_kb": 31368, "out_bytes": 0}
+{"ont": "ore_ont_9835", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.59, "rss_kb": 31640, "out_bytes": 0}
+{"ont": "ore_ont_9855", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.44, "rss_kb": 31444, "out_bytes": 0}
+{"ont": "ore_ont_9864", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.54, "rss_kb": 30564, "out_bytes": 96266, "pairs": 4443}
+{"ont": "ore_ont_9886", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 12.34, "rss_kb": 30796, "out_bytes": 8101038, "pairs": 71225}
+{"ont": "ore_ont_9890", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 9.85, "rss_kb": 31728, "out_bytes": 67922, "pairs": 2671}
+{"ont": "ore_ont_9894", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 7.78, "rss_kb": 30452, "out_bytes": 4067410, "pairs": 106805}
+{"ont": "ore_ont_9899", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 4.94, "rss_kb": 31844, "out_bytes": 59889, "pairs": 1654}
+{"ont": "ore_ont_9941", "reasoner": "hermit", "verdict": "CLASSIFIED", "harness_outcome": "ok", "wall_s": 2.33, "rss_kb": 31504, "out_bytes": 3164, "pairs": 8}
+{"ont": "ore_ont_9944", "reasoner": "hermit", "verdict": "DNF", "harness_outcome": "dnf", "wall_s": 120.52, "rss_kb": 31616, "out_bytes": 0}
