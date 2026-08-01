@@ -148,3 +148,28 @@ counts. **11/11 exact**, no fixture absent:
 
 The gate is deliberately sensitive: mutating the closure step, the equivalence expansion,
 or the Thing policy each break it (measured: pizza 499→171, 499→474, 499→596).
+
+## Cross-reasoner agreement observed in the field (2026-08-01)
+
+The 11-fixture `gate` checks the normaliser against rustdl's committed closures. A much
+stronger check fell out of the DNF-257 triage: over the **122 ontologies Konclude and HermiT
+BOTH classified**, normalised closure sizes agree **exactly on 121**. Two independent
+reasoners, two unrelated output formats (OWL/XML vs functional syntax), 121 exact matches —
+that is hard to achieve with a broken normaliser.
+
+The single disagreement is worth keeping: **`ore_ont_9540` — Konclude 66 pairs, HermiT 71.**
+Konclude UNDER-reports, the same direction as the previously recorded `ore_ont_10407` case
+where rustdl matched HermiT and Konclude was the outlier. It is a live reminder that
+**a single oracle is not an oracle**: FP adjudication is against **Konclude ∪ HermiT**, and
+a rustdl "FP" that appears only against Konclude must be re-checked against HermiT before it
+is called one.
+
+### A predicate bug this section would NOT have caught
+
+Agreement statistics only cover ontologies both reasoners classified. The verdict predicate
+that decides *whether* a run counted as classified is a separate failure surface, and it
+broke twice in one session — see `scripts/triage.py` and `tests/test_triage_predicate.py`.
+The second break misreported **110 of 192** HermiT runs as front-end failures because the
+predicate knew only OWL/XML and tab-separated text while HermiT writes functional syntax.
+Both bugs yielded a plausible number rather than an error. Validate the predicate per format,
+positive and negative, and sabotage the guard before believing it.
