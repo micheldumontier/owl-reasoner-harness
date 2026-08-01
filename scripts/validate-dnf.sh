@@ -32,7 +32,17 @@ CORPUS=/data/dumontier/ore-run/pool_sample/files
 R=${RUSTDL:-/data/dumontier/rustdl/target/release/rustdl}
 
 # Refuse to run alongside a sweep -- the whole point is an uncontended measurement.
-busy=$(pgrep -fc 'owl-reasoner-harnes[s] run|Konclud[e]|run-hermi[t]|kobayashi-marus[t]' 2>/dev/null || echo 0)
+#
+# `pgrep -c` PRINTS "0" AND EXITS 1 when nothing matches, so the obvious
+#   busy=$(pgrep -fc ... || echo 0)
+# yields the two-line string "0\n0", and `[ "$busy" -gt 0 ]` then dies with
+# "integer expression expected" -- the guard ERRORS OUT instead of evaluating, and
+# execution falls through. It happened to fall through in the safe direction here,
+# but a guard that errors is not a guard. Same shape as the `grep -c` bug that
+# produced invalid JSON in attribute.sh; this family of tools reports "none found"
+# through the exit code, not the output.
+busy=$({ pgrep -fc 'owl-reasoner-harnes[s] run|Konclud[e]|run-hermi[t]|kobayashi-marus[t]' 2>/dev/null || true; } | head -1)
+busy=${busy:-0}
 if [ "$busy" -gt 0 ] && [ "${FORCE:-0}" != "1" ]; then
   echo "REFUSING: $busy measurement process(es) running. This check is only meaningful" >&2
   echo "uncontended -- that is the confound it exists to rule out. Wait, or FORCE=1." >&2

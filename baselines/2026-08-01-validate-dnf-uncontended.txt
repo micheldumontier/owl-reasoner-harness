@@ -1,0 +1,28 @@
+fd8ad6573505d3bd
+./scripts/validate-dnf.sh: line 36: [: 0
+0: integer expression expected
+validate-dnf: 20 of 257 sampled, seed=20260801, cap=120s, SEQUENTIAL
+binary: /data/dumontier/rustdl/target/release/rustdl  sha256: fd8ad6573505d3bd
+  dnf        ore_ont_3237  120.0s
+  dnf        ore_ont_14879  120.1s
+  dnf        ore_ont_1272  120.1s
+  dnf        ore_ont_1820  120.0s
+  dnf        ore_ont_2901  120.0s
+  dnf        ore_ont_16283  120.0s
+  dnf        ore_ont_6682  120.1s
+  err134     ore_ont_10621  94.9s
+  dnf        ore_ont_11553  120.1s
+  dnf        ore_ont_1508  120.0s
+  dnf        ore_ont_8273  120.0s
+  dnf        ore_ont_15687  120.1s
+  dnf        ore_ont_3282  120.1s
+  dnf        ore_ont_5964  120.0s
+  dnf        ore_ont_2121  120.1s
+  dnf        ore_ont_2082  120.0s
+  dnf        ore_ont_14012  120.0s
+  dnf        ore_ont_4782  120.1s
+  dnf        ore_ont_16744  120.1s
+  dnf        ore_ont_1707  120.0s
+
+RESULT: completed=0  dnf=19  err=1
+The rustdl DNF side holds on this sample: no ontology completed uncontended.
