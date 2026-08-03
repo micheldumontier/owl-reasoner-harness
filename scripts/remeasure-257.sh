@@ -8,7 +8,7 @@ H=/data/dumontier/owl-reasoner-harness
 BIN=$1; TAG=$2
 CORPUS=/data/dumontier/ore-run/pool_sample/files
 mkdir -p "$H/runs/$TAG"
-split -n l/4 -d "$H/baselines/2026-08-01-dnf257-list.txt" "$H/runs/$TAG/c"
+split -n l/4 -d "$H/baselines/2026-08-01-survivors-199-list.txt" "$H/runs/$TAG/c"
 for c in 00 01 02 03; do
   $H/target/release/owl-reasoner-harness run \
     --corpus "$CORPUS" --only "$H/runs/$TAG/c$c" \
