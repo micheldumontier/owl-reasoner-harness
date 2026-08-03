@@ -1,0 +1,159 @@
+{
+ "arm": "TIGHT1MS",
+ "population": 400,
+ "status": {
+  "scored": 392,
+  "no_oracle": 6,
+  "arm_no_closure": 1,
+  "peer_disagreement": 1
+ },
+ "oracle_source": {
+  "both": 337,
+  "konclude": 54,
+  "-": 6,
+  "hermit": 3
+ },
+ "konclude_verdicts": {
+  "CLASSIFIED": 391,
+  "EMPTY": 7,
+  "DNF": 1,
+  "NO_OUTPUT": 1
+ },
+ "hermit_verdicts": {
+  "CLASSIFIED": 340,
+  "EMPTY": 15,
+  "NO_OUTPUT": 14,
+  "DNF": 31
+ },
+ "peer_disagreement": 1,
+ "scored": 392,
+ "MISSED_total": 5278,
+ "onts_with_MISSED": 64,
+ "MISSED_top10": [
+  [
+   "ore_ont_9654",
+   2382
+  ],
+  [
+   "ore_ont_16457",
+   936
+  ],
+  [
+   "ore_ont_3258",
+   200
+  ],
+  [
+   "ore_ont_9151",
+   166
+  ],
+  [
+   "ore_ont_3917",
+   150
+  ],
+  [
+   "ore_ont_12191",
+   139
+  ],
+  [
+   "ore_ont_11378",
+   138
+  ],
+  [
+   "ore_ont_3077",
+   124
+  ],
+  [
+   "ore_ont_699",
+   120
+  ],
+  [
+   "ore_ont_11647",
+   80
+  ]
+ ],
+ "FP_total": 0,
+ "onts_with_FP": 0,
+ "oracle_closure_total": 14041544,
+ "delta_vs_baseline": {
+  "baseline": "baselines/2026-08-03-missed-net-v0413.jsonl",
+  "delta_MISSED_total": 80,
+  "onts_lost_pairs": 13,
+  "onts_gained_pairs": 0,
+  "lost": [
+   [
+    "ore_ont_12191",
+    123,
+    139
+   ],
+   [
+    "ore_ont_11378",
+    123,
+    138
+   ],
+   [
+    "ore_ont_3077",
+    112,
+    124
+   ],
+   [
+    "ore_ont_699",
+    113,
+    120
+   ],
+   [
+    "ore_ont_3917",
+    144,
+    150
+   ],
+   [
+    "ore_ont_7893",
+    0,
+    6
+   ],
+   [
+    "ore_ont_9151",
+    160,
+    166
+   ],
+   [
+    "ore_ont_12698",
+    12,
+    15
+   ],
+   [
+    "ore_ont_1509",
+    0,
+    2
+   ],
+   [
+    "ore_ont_7532",
+    1,
+    3
+   ],
+   [
+    "ore_ont_8911",
+    0,
+    2
+   ],
+   [
+    "ore_ont_9662",
+    1,
+    3
+   ],
+   [
+    "ore_ont_3806",
+    0,
+    1
+   ]
+  ],
+  "gained": [],
+  "newly_unscored": [
+   [
+    "ore_ont_15010",
+    "scored",
+    "arm_no_closure"
+   ]
+  ],
+  "n_newly_unscored": 1
+ }
+}

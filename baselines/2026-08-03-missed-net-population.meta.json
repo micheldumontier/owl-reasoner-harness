@@ -1,0 +1,23 @@
+{
+ "seed": 20260803,
+ "n_target": 400,
+ "n_search_target": 200,
+ "n_selected": 400,
+ "manifest": "/mnt/um-share-drive/dumontier/missed-net/work/manifest-v0413.jsonl",
+ "frame_size": 1746,
+ "frame_strata": {
+  "Horn/nosearch": 615,
+  "Horn/search": 1,
+  "out-of-EL/nosearch": 383,
+  "out-of-EL/search": 188,
+  "pure-EL/nosearch": 559
+ },
+ "sample_strata": {
+  "Horn/nosearch": 70,
+  "Horn/search": 1,
+  "out-of-EL/nosearch": 71,
+  "out-of-EL/search": 188,
+  "pure-EL/nosearch": 70
+ },
+ "list": "baselines/2026-08-03-missed-net-population.txt"
+}

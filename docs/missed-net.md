@@ -129,16 +129,126 @@ overrides.
   wrapper caps address space at **24 GB**, which changes behaviour on a memory-tail ontology
   relative to an uncapped run.
 
+## The committed baseline — v0.4.13 (`main` @ 72a1103, sha256 `44d7d80e…`)
+
+`normalise.py gate`: **11/11 exact, 0 absent** (re-run immediately before the net).
+`normalise.py selftest`: all pass. `tests/`: 21 pass.
+
+Frame: **1,746 of 1,920** ORE ontologies completed at a 60 s single-thread cap (172 DNF,
+2 front-end rejects). Population: **400**, seed **20260803**.
+
+| stratum | frame | sample | baseline MISSED | onts w/ MISSED |
+|---|---|---|---|---|
+| pure-EL / no search | 559 | 70 | **0** | 0 |
+| Horn / no search | 615 | 70 | **0** | 0 |
+| Horn / search | 1 | 1 | 1 | 1 |
+| out-of-EL / no search | 383 | 71 | 3,606 | — |
+| out-of-EL / search | 188 | **188** | 1,591 | — |
+| **total** | 1,746 | **400** | **5,198** | **60 of 393** |
+
+**189 of 400 (47%) exercise a per-pair search** — the whole out-of-EL/search stratum plus the
+single Horn one. There is no pure-EL/search stratum *at all* in the frame, which is the
+saturation fast path working as designed.
+
+Oracle coverage: `both` 337, Konclude-only 54, HermiT-only 3, none 6.
+**`peer_disagreement`: 1** (`ore_ont_15682` — Konclude 513 pairs, HermiT 525; Konclude
+under-reports, the same direction as `ore_ont_9540`. rustdl would have scored MISSED=14 there;
+it is excluded instead). **`no_oracle`: 6** — five where Konclude wrote its 896-byte
+Thing/Nothing-only output *and* HermiT produced nothing (both front ends failed), plus
+`ore_ont_2574` (115 MB) where both peers DNF'd at 120 s.
+
+**FP = 0 on all 393 scored ontologies against the UNION oracle**, over a 14.0M-pair oracle
+closure. That is a soundness datum, and it is the strongest one in this repo: the curated
+`run-soundness-diff.sh` net covers 11 fixtures.
+
+**Read the 5,198 as a reference level, not an indictment.** It is concentrated — the top two
+ontologies (`ore_ont_9654` 2,382 and `ore_ont_16457` 936) are 64% of it — and rustdl is a
+documented sound under-approximation in exactly the places it lands: `trust_sat`, the fragment
+gates, and the default 1000 ms per-pair budget. Its value is as the denominator of a Δ.
+
+## Cost of a full run
+
+Measured on this host (32 cores, `--threads 1`, 60 s arm cap / 120 s peer cap):
+
+| leg | scope | jobs | wall |
+|---|---|---|---|
+| rustdl arm sweep (frame construction) | 1,920 ORE | 4 | **68 min** (dominated by 172 DNF rows at 60 s) |
+| Konclude leg | 375 (25 adopted) | 4 | **7 min** — native binary, no container |
+| HermiT leg | 377 (23 adopted) | 4 | **38 min** — the long pole (0.56 s docker+JVM floor *per invocation*) |
+| `net` (normalise + union + 2 `compare`s per ontology) | 400 | 8 | **~5 min** warm, ~15 min cold |
+| **baseline, end to end** | | | **~2 h** |
+| a **later arm**: sweep the population + `net --baseline` | 400 | 2 / 8 | **~10 min** |
+
+That asymmetry is the point. The expensive half is the frame and the peer legs, and both are
+committed or cached; evaluating a new build costs ten minutes.
+
+**Scratch footprint: ~45 GB, all of it under `$MISSED_NET_SCRATCH` on the shared volume, none on
+the root filesystem** (which was at 97% / 15 GB free when this ran, and is unchanged by it).
+Raw hierarchies dominate; the normalised TSVs are small. `raw/v0413/` is retained deliberately —
+it is the frame, and re-drawing the population with a different `--seed` costs nothing while it
+exists, versus 68 minutes to re-sweep. Delete `raw/<arm>/` for a superseded arm; keep
+`tsv/<arm>/`.
+
+The dominant per-ontology cost inside `net` is `normalise`'s transitive closure, which is
+recomputed by `compare` on both sides — the largest oracle here is 1.31M pairs
+(`ore_ont_4802`). Two guards exist because of it: `prune_inert_unsat_edges` (see below) and
+`MISSED_NET_MAX_EDGES` (default 8M), which **records** an over-budget graph as
+`arm_no_closure` rather than hanging on it.
+
+### One ontology needed a provable shortcut
+
+`ore_ont_11305` has 3,660 classes that are **all unsatisfiable and all mutually equivalent**,
+with **zero** `direct` edges. rustdl reports that as one `equiv` line over 3,660 names plus
+3,660 `unsat` lines, so `add_equiv_group` expands it to 3,660² = 13.4M edges and the closure
+fixpoint then does ~3,660³ ≈ 4.9e10 set probes — hours — before `restricted()` discards every
+pair, all 3,660 classes being excluded. Konclude does not hit this on the same ontology: it
+writes `EquivalentClasses(owl:Nothing, …)`, which routes straight to `unsat` **without**
+expanding. So it is an output-*shape* artefact of one reasoner.
+
+`prune_inert_unsat_edges` drops an edge only when **(a)** both endpoints are in that file's own
+unsat/Thing-equivalent set — so any pair it could contribute is removed anyway — **and (b)**
+neither endpoint appears in any edge that is not itself fully inside that set, i.e. both are
+isolated in the retained graph and lie on no path between other nodes. (a) alone would be
+**wrong**: it would drop `U1 ⊑ U2` from `A ⊑ U1 ⊑ U2 ⊑ B` and silently lose the live `A ⊑ B`.
+Deleting clause (b) left the whole suite green until
+`test_prune_keeps_an_excluded_to_excluded_edge_that_is_on_a_live_path` was added — the obvious
+fixture (`A ⊑ U ⊑ B`) has *no* edge fully inside the excluded set, so the sabotaged code also
+dropped nothing. That is the second time in this file's history that a guard test survived its
+own sabotage.
+
 ## Sensitivity — the part that proves the net works
 
 **A net that reports 0 for everything is indistinguishable from a broken net.** So the net is
 validated against a build known to lose entailments, with the direction predicted *first*. The
-in-tree lever is `--pair-timeout-ms 1` (the documented sound under-approximation: pairs over budget
-default to "not subsumed"). Calibrated out-of-band on `pizza.ofn`: **309 direct pairs at the 1000 ms
-default, 289 at 1 ms.** Prediction, recorded before running: **ΔMISSED > 0, concentrated in rows
-with `tableau>0` or `mode: hybrid`, FP unchanged at 0** — a pure-EL fast-path ontology issues no
-per-pair probe and so cannot lose anything. See the results table in
-`baselines/<date>-missed-net-*.summary.json` and the commit message.
+lever is `--pair-timeout-ms 1` (the documented sound under-approximation: pairs over budget
+default to "not subsumed"). Calibrated out of band on `pizza.ofn`: **309 direct pairs at the
+1000 ms default, 289 at 1 ms.**
+
+**Prediction, committed in `f383c34` before the arm was run:** ΔMISSED > 0, concentrated in
+search-exercised rows, FP unchanged at 0 — a fast-path ontology issues no per-pair probe and so
+cannot lose anything.
+
+**Result (`TIGHT1MS`, same pinned binary + sha, only `--pair-timeout-ms 1` added):**
+
+| | |
+|---|---|
+| **ΔMISSED** | **+80** (5,198 → 5,278) |
+| ontologies that lost pairs | **13** |
+| ontologies that gained pairs | **0** |
+| newly unscored (answers → DNF) | **1** (`ore_ont_15010`) |
+| FP | **0**, unchanged |
+| of the 13 losers, search-exercised | **13 / 13** |
+| of the 1 newly unscored, search-exercised | **1 / 1** |
+| losses in pure-EL or Horn/no-search rows | **0** |
+
+Direction, magnitude and *location* all as predicted: every loss landed in the stratum the
+population deliberately over-samples, and none landed in the 140 fast-path rows. Biggest single
+losses `ore_ont_12191` 123→139, `ore_ont_11378` 123→138, `ore_ont_3077` 112→124. The
+`newly_unscored` row is the other half of the trade the net must be able to see: a build can
+"improve" MISSED by turning answers into timeouts, and that is reported separately rather than
+being scored 0.
+
+**The net sees a known loss. It is finished in the sense that mattered.**
 
 The net's own arithmetic is pinned by `tests/test_missed_net.py`, and those tests were **sabotaged
 to prove they guard**: degrading the union oracle to Konclude-only, folding `peer_disagreement`

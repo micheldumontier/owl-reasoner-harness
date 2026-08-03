@@ -1,0 +1,3 @@
+{"arm":"hermit","wrapper":"/data/dumontier/reasoners/run-hermit.sh","cap_secs":120,"threads":1,
+ "jobs":4,"corpus":"/data/dumontier/ore-run/pool_sample/files","list":"/mnt/um-share-drive/dumontier/missed-net/work/her-todo.txt",
+ "n_requested":377,"when":"2026-08-03T15:29:07+02:00"}

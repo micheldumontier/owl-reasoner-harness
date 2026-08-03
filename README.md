@@ -48,6 +48,11 @@ reasoner — four reasoners emit four formats whose bytes can never match. `norm
 reduces each to a sorted `sub<TAB>sup` closure and diffs those. It is gated on reproducing
 rustdl's committed FP=0 closure counts exactly (`normalise.py gate`, currently 11/11).
 
+For **"how many entailments did this change lose?"** — the question neither the FP gate nor an
+outcome sweep can answer — see `docs/missed-net.md` and `scripts/missed-net.{sh,py}`: a
+per-ontology **MISSED** count against a **Konclude ∪ HermiT** oracle over a seeded, stratified
+population, with a committed baseline so any later arm reports **ΔMISSED**.
+
 - **The reasoner is a command, not a dependency.** It is invoked by path, so the harness can
   measure several builds of the same reasoner (`v0.4.5` vs `v0.4.6`, flag ON vs OFF) and other
   reasoners (Konclude, HermiT, ELK, whelk) with the same code. A harness compiled *inside* the

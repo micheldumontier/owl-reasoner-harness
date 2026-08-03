@@ -336,9 +336,67 @@ def normalised_path(arm: str, ont: str) -> pathlib.Path:
     return SCRATCH / "tsv" / arm / f"{ont}.tsv"
 
 
+#: Refuse to close a graph bigger than this many edges; record it instead of hanging.
+#: The largest genuine case in the 2026-08-03 population is ~1.0M edges, so 8M is far
+#: above anything real and far below the pathological case below.
+MAX_EDGES = int(os.environ.get("MISSED_NET_MAX_EDGES", "8000000"))
+
+
+def prune_inert_unsat_edges(n: normalise.Normalised) -> int:
+    """Drop edges that PROVABLY cannot change the reported pair set, and are ruinous.
+
+    WHY THIS EXISTS. `ore_ont_11305` has 3,660 classes that are ALL unsatisfiable and
+    all mutually equivalent, and **zero** `direct` edges. rustdl reports that as one
+    `equiv` line over 3,660 names plus 3,660 `unsat` lines, so `add_equiv_group`
+    expands the group to 3,660² = 13.4M edges and `closure()`'s fixpoint then does
+    ~3,660³ ≈ 4.9e10 set probes -- hours -- before `restricted()` throws away every
+    single pair, because all 3,660 classes are excluded. Konclude does NOT hit this on
+    the same ontology: it writes `EquivalentClasses(owl:Nothing, …)`, which
+    `add_equiv_group` routes straight to `unsat` WITHOUT expanding. So the blow-up is
+    an output-SHAPE artefact of one reasoner, not a property of the ontology.
+
+    THE RULE, and why it is inert rather than merely convenient. An edge is dropped
+    only when (a) BOTH endpoints are in this file's own unsat / Thing-equivalent set,
+    so any pair it could contribute is removed by `restricted()` anyway, AND (b)
+    NEITHER endpoint appears in any edge that is not itself fully inside that set --
+    i.e. both endpoints are isolated in the retained graph, so they lie on no path
+    between any other pair of nodes and cannot shorten anyone's reachability. Under (a)
+    and (b) the reported pair set is unchanged by construction.
+
+    Note (b) is what makes it safe in general: without it, dropping `A ⊑ U ⊑ B` could
+    lose a live `A ⊑ B`. Returns the number of edges dropped (0 = no-op).
+    """
+    excluded = n.unsat | n.thing_equiv
+    if not excluded or not n.edges:
+        return 0
+    # Pass 1: nodes touched by an edge that is NOT fully inside the excluded set.
+    live: set[str] = set()
+    any_inside = False
+    for s, t in n.edges:
+        if s in excluded and t in excluded:
+            any_inside = True
+        else:
+            live.add(s)
+            live.add(t)
+    if not any_inside:
+        return 0
+    # Pass 2: keep everything except the fully-inside AND fully-isolated edges.
+    before = len(n.edges)
+    n.edges = {
+        (s, t)
+        for (s, t) in n.edges
+        if not (s in excluded and t in excluded and s not in live and t not in live)
+    }
+    return before - len(n.edges)
+
+
 def ensure_normalised(arm: str, fmt: str, ont: str) -> pathlib.Path | None:
-    """Normalise one raw output to a cached TSV. Returns None if there is nothing to
-    normalise (missing / empty capture)."""
+    """Normalise one raw output to a cached TSV.
+
+    Returns None if there is nothing to normalise (missing / empty capture) or if the
+    graph exceeds `MAX_EDGES` -- an over-budget graph is REPORTED by the caller, never
+    silently scored 0.
+    """
     raw = SCRATCH / "raw" / arm / f"{ont}{FMT_SUFFIX[fmt]}"
     if not raw.exists() or raw.stat().st_size == 0:
         return None
@@ -347,6 +405,9 @@ def ensure_normalised(arm: str, fmt: str, ont: str) -> pathlib.Path | None:
         return dest
     dest.parent.mkdir(parents=True, exist_ok=True)
     n = normalise.normalise_file(fmt, str(raw), None)
+    prune_inert_unsat_edges(n)
+    if len(n.edges) > MAX_EDGES:
+        return None
     tmp = dest.with_suffix(".tsv.part")
     with tmp.open("w", encoding="utf-8") as fh:
         n.write(fh)
@@ -510,6 +571,11 @@ def summarise(rows: list[dict], arm: str) -> dict:
         "population": len(rows),
         "status": dict(Counter(r["status"] for r in rows)),
         "oracle_source": dict(Counter(r.get("oracle_source", "-") for r in rows)),
+        # PEER COVERAGE, surfaced deliberately. A stale or half-finished peer leg shows up
+        # here as a wall of ABSENT instead of silently shrinking the oracle -- which is
+        # exactly how a MISSED total can come out too small and still look plausible.
+        "konclude_verdicts": dict(Counter(r.get("konclude", "-") for r in rows)),
+        "hermit_verdicts": dict(Counter(r.get("hermit", "-") for r in rows)),
         "peer_disagreement": sum(1 for r in rows if r["status"] == "peer_disagreement"),
         "scored": len(scored),
         "MISSED_total": total,

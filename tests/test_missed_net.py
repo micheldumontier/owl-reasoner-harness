@@ -260,3 +260,82 @@ def test_selection_is_seeded_and_reproducible(tmp_path):
 
     mn.cmd_select(Args2())
     assert pathlib.Path(Args2.out).read_text() != first, "a different seed must differ"
+
+
+# ── the inert-unsat prune ───────────────────────────────────────────────────
+
+
+def test_prune_is_inert_on_a_path_through_an_excluded_node(tmp_path):
+    """`A <= U <= B` with U unsat must KEEP `A <= B`. This is the condition that makes
+    the prune sound rather than merely fast: dropping an edge whose endpoints still
+    appear elsewhere would silently delete a live entailment and read as a MISSED."""
+    mn = _mn(tmp_path)
+    n = mn.normalise.Normalised()
+    U = "http://x#U"
+    n.add_edge(A, U)
+    n.add_edge(U, B)
+    n.unsat.add(U)
+    before = n.pairs()
+    assert (A, B) in before, before          # closure through U, U itself excluded
+    dropped = mn.prune_inert_unsat_edges(n)
+    assert dropped == 0, dropped             # U is NOT isolated -> nothing may go
+    assert n.pairs() == before
+
+
+def test_prune_collapses_an_isolated_all_unsat_equivalence_group(tmp_path):
+    """The `ore_ont_11305` shape: an equivalence group whose every member is unsat and
+    which touches nothing else. 3,660 such members cost ~4.9e10 closure probes for a
+    result that is provably empty."""
+    mn = _mn(tmp_path)
+    n = mn.normalise.Normalised()
+    group = [f"http://x#G{i}" for i in range(12)]
+    n.add_equiv_group(group)
+    n.unsat.update(group)
+    n.add_edge(A, B)                          # a live edge, must survive untouched
+    assert len(n.edges) == 12 * 11 + 1
+    dropped = mn.prune_inert_unsat_edges(n)
+    assert dropped == 12 * 11, dropped
+    assert n.edges == {(A, B)}
+    assert n.pairs() == {(A, B)}
+
+
+def test_over_budget_graph_is_not_scored_zero(tmp_path, monkeypatch):
+    """An over-MAX_EDGES graph must yield arm_no_closure, not MISSED=0."""
+    mn = _mn(tmp_path)
+    ont = "u6"
+    # Budget 1: the peers (1 edge each) fit, the arm (2 edges) does not -- so the row
+    # must fail on the ARM side specifically, with the oracle intact.
+    _write(
+        tmp_path, ont,
+        kon=_owx([(A, B)]), her=_hermit([(A, B)]), arm=_rustdl([(A, B), (B, C)]),
+    )
+    monkeypatch.setattr(mn, "MAX_EDGES", 1)
+    row = mn.one_ontology(ont, "ARM", _cases([ont]), _cases([ont]), _cases([ont]))
+    assert row["status"] == "arm_no_closure", row
+    assert "MISSED" not in row, row
+
+
+def test_prune_keeps_an_excluded_to_excluded_edge_that_is_on_a_live_path(tmp_path):
+    """`A <= U1 <= U2 <= B` with U1, U2 both unsat.
+
+    `(U1,U2)` IS fully inside the excluded set, so condition (a) alone would drop it and
+    silently lose the live `A <= B`. Only condition (b) -- both endpoints isolated in the
+    retained graph -- prevents that, and U1/U2 are NOT isolated here.
+
+    THIS TEST EXISTS BECAUSE THE OBVIOUS ONE DID NOT GUARD IT: deleting the isolation
+    clause from `prune_inert_unsat_edges` left the whole suite green, because in the
+    `A <= U <= B` fixture NEITHER edge is fully inside the excluded set, so the
+    sabotaged code also dropped nothing. A guard test that its own sabotage survives is
+    not a guard.
+    """
+    mn = _mn(tmp_path)
+    n = mn.normalise.Normalised()
+    U1, U2 = "http://x#U1", "http://x#U2"
+    for s, t in ((A, U1), (U1, U2), (U2, B)):
+        n.add_edge(s, t)
+    n.unsat.update({U1, U2})
+    before = n.pairs()
+    assert (A, B) in before, before
+    dropped = mn.prune_inert_unsat_edges(n)
+    assert dropped == 0, dropped
+    assert n.pairs() == before

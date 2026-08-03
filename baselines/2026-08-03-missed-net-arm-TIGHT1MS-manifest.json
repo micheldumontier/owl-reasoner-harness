@@ -1,0 +1,4 @@
+{"arm":"TIGHT1MS","binary":"/mnt/um-share-drive/dumontier/missed-net/bin/rustdl-v0413-main-72a1103","sha256":"44d7d80e4fb3c8ee3ec4ae81cbec769847fad9e7984e70e7c84e830314d91c39","version":"rustdl 0.4.13",
+ "classify_args":"--pair-timeout-ms 1","rustdl_env":"","cap_secs":60,"threads":1,"jobs":2,
+ "corpus":"/data/dumontier/ore-run/pool_sample/files","list":"baselines/2026-08-03-missed-net-population.txt","n_requested":400,
+ "wrapper":"/data/dumontier/owl-reasoner-harness/wrappers/run-rustdl.sh","when":"2026-08-03T15:30:33+02:00"}

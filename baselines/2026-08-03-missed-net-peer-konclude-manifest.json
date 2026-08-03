@@ -1,0 +1,3 @@
+{"arm":"konclude","wrapper":"/data/dumontier/reasoners/run-konclude.sh","cap_secs":120,"threads":1,
+ "jobs":4,"corpus":"/data/dumontier/ore-run/pool_sample/files","list":"/mnt/um-share-drive/dumontier/missed-net/work/kon-todo.txt",
+ "n_requested":375,"when":"2026-08-03T15:25:24+02:00"}

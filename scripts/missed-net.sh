@@ -45,7 +45,12 @@ guard_disk() {
 sweep_chunks() {
   local tag=$1 wrapper=$2 outdir=$3 list=$4 cap=$5 d
   d=$SCRATCH/runs/$tag; mkdir -p "$d" "$outdir"
-  rm -f "$d"/c[0-9][0-9]
+  # DELETE THE CONCATENATED RESULT FIRST. It is written only at the very end, so a
+  # leftover file from an earlier (smaller) run of the same tag is indistinguishable from
+  # a finished leg -- measured: a 4-ontology smoke left runs/hermit/hermit.jsonl in place,
+  # a later 377-ontology leg was still running, and a "both legs done" check on file
+  # EXISTENCE passed while the analyser would have read the 4-case file as the oracle.
+  rm -f "$d/$tag.jsonl" "$d"/c[0-9][0-9]
   split -n "l/$JOBS" -d "$list" "$d/c"
   local pids=()
   for c in "$d"/c[0-9][0-9]; do
