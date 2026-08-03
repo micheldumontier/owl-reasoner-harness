@@ -6,3 +6,4 @@
 *.csv
 !baselines/*.jsonl
 scripts/__pycache__/
+tests/__pycache__/
