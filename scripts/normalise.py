@@ -362,7 +362,17 @@ def declared_classes(ontology: str) -> dict[str, str]:
 
 
 def parse_km(path: str, ontology: str | None) -> Normalised:
-    """KM JSON: `{"subsumptions":{"Article":["Entry","Q_1",…]},"inconsistent":…}`.
+    """KM JSON, in either release format.
+
+    * <= v0.2.3: `{"subsumptions": {"Article": ["Entry", "Q_1", …]}, …}` — a dict
+      keyed by BARE LOCAL NAME.
+    * >= v0.2.4: `{"subsumptions": [["http://…#Article", "http://…#Entry"], …]}` — a
+      list of pairs carrying FULL IRIs.
+
+    Both are handled. Passing the newer format to a parser expecting only the older
+    one raises `AttributeError` on `.items()` — it fails loudly rather than
+    silently reporting an empty closure, which matters because an empty closure
+    would read as "KM missed everything" in a comparison.
 
     KM emits the TRANSITIVE CLOSURE keyed by LOCAL NAME, mixed with internal Tseitin
     definers. Requires `--ontology` to supply the R1 whitelist / name->IRI map.
@@ -396,7 +406,37 @@ def parse_km(path: str, ontology: str | None) -> Normalised:
         return None
 
     dropped: set[str] = set()
-    for sub, sups in (data.get("subsumptions") or {}).items():
+    raw = data.get("subsumptions") or {}
+    if isinstance(raw, list):
+        # KM >= v0.2.4 emits a LIST of [sub, sup] pairs carrying FULL IRIs, where
+        # earlier releases emitted a DICT keyed by BARE LOCAL NAME. Both are
+        # accepted so this parser is not silently version-locked; the older format
+        # is what the 2026-07-19 head-to-head was computed against.
+        #
+        # Full IRIs need no name->IRI lookup, but they still go through `lookup`
+        # first so an ontology that genuinely declares a `km_src_`-prefixed local
+        # name keeps working; unresolvable entries fall back to the IRI as-is only
+        # when it really is an absolute IRI, so internal definers are still dropped.
+        pairs = []
+        for entry in raw:
+            if isinstance(entry, (list, tuple)) and len(entry) >= 2:
+                pairs.append((str(entry[0]), str(entry[1])))
+            elif isinstance(entry, dict) and "sub" in entry and "sup" in entry:
+                pairs.append((str(entry["sub"]), str(entry["sup"])))
+        for sub, sup in pairs:
+            s_iri = lookup(sub) or (sub if "://" in sub else None)
+            t_iri = lookup(sup) or (sup if "://" in sup else None)
+            if s_iri is None:
+                dropped.add(sub)
+                continue
+            if t_iri is None:
+                dropped.add(sup)
+                continue
+            n.add_edge(s_iri, t_iri)
+        if dropped:
+            n.notes.append(f"km dropped {len(dropped)} internal symbol(s)")
+        return n
+    for sub, sups in raw.items():
         s_iri = lookup(sub)
         if s_iri is None:
             dropped.add(sub)
