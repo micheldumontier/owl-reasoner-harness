@@ -23,6 +23,35 @@ cannot?" -- the verdict must come from the output:
              limit is what makes a DNF roster unactionable.
   NO_OUTPUT  exited, wrote nothing at all (a crash, or an abort such as KM's
              allocation failure under its mandatory 20 GB cap).
+  INCONSISTENT
+             the reasoner PROVED the ontology inconsistent. Added 2026-08-05.
+             This is a real verdict and the most informative one a peer can give
+             about a rustdl DNF, but it was previously invisible: Konclude writes
+             a full hierarchy (128 KB on ore_ont_16372) and so read as CLASSIFIED,
+             while HermiT throws and writes nothing and so read as NO_OUTPUT --
+             i.e. it was indistinguishable from a crash, which is its opposite in
+             value. Three tail members were mis-triaged this way.
+
+SOUNDNESS SUBTLETY IN THE PREDICATE -- do not "simplify" it
+-----------------------------------------------------------
+Inconsistency is `owl:Thing` being unsatisfiable, NOT "every named class is
+unsatisfiable". `{A subclassof bottom, B subclassof bottom}` empties every named
+class and still has a model. So the predicate requires owl:Thing itself to appear
+in an equivalence with owl:Nothing. Measured on the three known cases plus a
+consistent control: Thing-in-Nothing-equivalence was True/True/True vs False, while
+a ratio heuristic ("99.9% of classes are unsat") would also have fired on the
+`{A,B subclassof bottom}` shape. The class counts those cases yield (745 / 107 /
+338 of 746 / 108 / 339 declared) are recorded for reference only.
+
+TRAP: `XML parsing error at 1:1` IN KONCLUDE'S LOG IS BENIGN
+-------------------------------------------------------------
+Konclude probes formats, so it emits that error for EVERY functional-syntax `.owl`
+file and then reads it successfully. A consistent, definitely-classified control
+(`ore_ont_6485`) logs it exactly as the three inconsistent ones do. An earlier pass
+of this investigation read it as "Konclude never parsed these files" and briefly
+concluded its inconsistency claims were parse artifacts -- wrong, and only the
+control caught it. The diagnostic pair is `processing step failed` +
+`is inconsistent` (0/0 on the control, 18/18 on each inconsistent case).
 
 `pairs` (the normalised transitive closure size) is recorded alongside, because a
 CLASSIFIED verdict with a suspiciously small closure is worth a second look. It
@@ -33,6 +62,7 @@ nothing has still parsed and classified.
 
 import argparse
 import json
+import re
 import pathlib
 import subprocess
 import sys
@@ -109,6 +139,41 @@ def declared_real_class(path: pathlib.Path, fmt: str) -> bool:
     raise ValueError(f"no content predicate for format {fmt!r}")
 
 
+def proves_inconsistent(out_path: pathlib.Path, log_path: pathlib.Path | None) -> bool:
+    """True if the reasoner PROVED inconsistency.
+
+    Two independent routes, because the peers signal it differently:
+
+    * a hierarchy asserting `owl:Thing` equivalent to `owl:Nothing` (Konclude's
+      form -- it still writes a full hierarchy);
+    * a log carrying an explicit inconsistency exception (HermiT's form -- it
+      writes no hierarchy at all).
+
+    See the module docstring for why the test is `owl:Thing`, not "all classes".
+    """
+    try:
+        text = out_path.read_text(errors="replace")
+    except OSError:
+        text = ""
+    for block in re.findall(r"<EquivalentClasses>(.*?)</EquivalentClasses>", text, re.S):
+        if "Nothing" in block and "Thing" in block:
+            return True
+    # Functional-syntax equivalent, for a peer that emits OFN rather than OWL/XML.
+    for line in text.splitlines():
+        if line.startswith("EquivalentClasses(") and "Nothing" in line and "Thing" in line:
+            return True
+    if log_path is not None:
+        try:
+            log = log_path.read_text(errors="replace")
+        except OSError:
+            return False
+        # HermiT. NOT keyed on Konclude's `is inconsistent`, which also appears
+        # downstream of an aborted run; its hierarchy is the reliable signal.
+        if "InconsistentOntologyException" in log:
+            return True
+    return False
+
+
 def closure_pairs(path: pathlib.Path, fmt: str, ontology: pathlib.Path | None):
     """Normalised closure size, or None if the normaliser could not read it."""
     cmd = [sys.executable, str(NORMALISE), "normalise", "--format", fmt, str(path)]
@@ -134,6 +199,12 @@ def main() -> int:
     ap.add_argument("--format", required=True, choices=["konclude", "hermit", "km", "rustdl"])
     ap.add_argument("--corpus", help="source ontology dir (required for km)")
     ap.add_argument("--ext", default="owl")
+    ap.add_argument(
+        "--log-dir",
+        help="dir of captured reasoner logs (<ont>.log), so a peer that proves "
+        "inconsistency by throwing rather than by writing a hierarchy is not "
+        "misread as a crash",
+    )
     ap.add_argument("--pairs", action="store_true", help="also normalise (slower)")
     ap.add_argument("-o", "--out", required=True)
     a = ap.parse_args()
@@ -151,8 +222,13 @@ def main() -> int:
         outcome = rec["outcome"]
         cand = out_dir / f"{ont}{suffix}"
 
+        log = pathlib.Path(a.log_dir) / f"{ont}.log" if a.log_dir else None
         if outcome == "dnf":
             verdict = "DNF"
+        elif proves_inconsistent(cand, log):
+            # Before the no-output test on purpose: HermiT proves inconsistency by
+            # throwing, so it leaves no hierarchy and would otherwise read as a crash.
+            verdict = "INCONSISTENT"
         elif not cand.exists() or cand.stat().st_size == 0:
             verdict = "NO_OUTPUT"
         elif declared_real_class(cand, a.format):
