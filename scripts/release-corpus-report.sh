@@ -120,11 +120,20 @@ if [ $rc -ne 0 ] && [ -n "${lost// /}" ]; then
   for o in $lost; do
     f="$CORPUS/$o.owl"; [ -f "$f" ] || f="$CORPUS/$o.ofn"
     st=$(date +%s.%N)
-    if RAYON_NUM_THREADS=1 timeout "$bigcap" "$BIN" classify --json "$f" 2>/dev/null | grep -q '"direct_subsumptions"'; then
-      en=$(date +%s.%N)
+    # NO PIPE. This script runs `set -euo pipefail`, and `... | grep -q` makes grep
+    # exit on the first match, sending SIGPIPE to rustdl; pipefail then propagates
+    # rustdl's 141 and the test reports "did not classify" EVEN THOUGH THE MATCH WAS
+    # FOUND. That marks every reported loss as confirmed-lost. It did exactly that to
+    # ore_ont_2574 on 2026-08-22, an ontology that classifies in 56-60 s on both arms
+    # with byte-identical output. Write to a file, then grep the file.
+    tmp=$(mktemp)
+    if RAYON_NUM_THREADS=1 timeout "$bigcap" "$BIN" classify --json "$f" > "$tmp" 2>/dev/null \
+       && grep -q '"direct_subsumptions"' "$tmp"; then
+      en=$(date +%s.%N); rm -f "$tmp"
       printf "  %s: CLASSIFIED in %.1fs (cap %ss) -> capability intact, CAP-BORDERLINE not a regression\n" \
         "$o" "$(echo "$en-$st"|bc)" "$CAP"
     else
+      rm -f "$tmp"
       echo "  $o: did NOT classify even at ${bigcap}s"
       still_lost="$still_lost $o"
     fi
