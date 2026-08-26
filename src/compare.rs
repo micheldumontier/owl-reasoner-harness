@@ -118,6 +118,23 @@ pub fn main(args: CompareArgs) -> Result<(), String> {
     }
 
     println!("\n## answer identity (both completed)");
+    // Digest MODE is part of what a digest means. Comparing a raw-stdout digest
+    // against a banner-stripped one makes every row differ; comparing two RAW
+    // digests makes ~65% of rows differ from timing noise alone (measured: 1133
+    // of 1745). Say which regime this reading is in rather than letting the
+    // reader assume the strict one.
+    match (ha.digest_strip_comments, hb.digest_strip_comments) {
+        (true, true) => println!("  digest: banner-stripped (`#` lines excluded) — strict"),
+        (false, false) => println!(
+            "  digest: RAW stdout — timing banners included, so DIFFERENT is \
+             NOT evidence of an answer change (re-run with --digest-strip-comments)"
+        ),
+        _ => println!(
+            "  digest: MODE MISMATCH (A strip={}, B strip={}) — the comparison below \
+             is MEANINGLESS; re-run both arms with the same setting",
+            ha.digest_strip_comments, hb.digest_strip_comments
+        ),
+    }
     println!("  identical {answer_same}");
     println!("  DIFFERENT {}", answer_diff.len());
     if answer_diff.is_empty() {

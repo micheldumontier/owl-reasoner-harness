@@ -69,6 +69,12 @@ pub struct Header {
     pub only_requested: Option<usize>,
     /// When `--only` was used: number of stems that resolved to an existing file.
     pub only_resolved: Option<usize>,
+    /// Whether `out_sha256` excluded `#` banner lines. Recorded because it changes
+    /// what an answer-identity comparison MEANS: two runs must agree on it before
+    /// their digests may be compared at all. `serde(default)` keeps pre-existing
+    /// run files (all of which digested raw stdout) parseable as `false`.
+    #[serde(default)]
+    pub digest_strip_comments: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

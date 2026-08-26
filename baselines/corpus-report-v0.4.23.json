@@ -1,0 +1,1720 @@
+{
+ "binary_sha": "9704e28dfb754410352c67ce460c3513f277e9a75e1eae2df5a76670c7eff967",
+ "cap_secs": 60,
+ "classified": 417,
+ "dnf": 7,
+ "empty_output": 0,
+ "gate": {
+  "closure_regressions": [
+   {
+    "now": 126736,
+    "ont": "ore_ont_12698",
+    "was": 126737
+   }
+  ],
+  "lost_ontologies": [
+   "ore_ont_2574"
+  ],
+  "verdict_flips": []
+ },
+ "incomplete_onts": 65,
+ "inconsistent_onts": [
+  "ore_ont_11287",
+  "ore_ont_11305",
+  "ore_ont_12174",
+  "ore_ont_14351",
+  "ore_ont_15516",
+  "ore_ont_15871",
+  "ore_ont_16372",
+  "ore_ont_5206",
+  "ore_ont_5753",
+  "ore_ont_6446",
+  "ore_ont_7179",
+  "ore_ont_8280",
+  "ore_ont_9303"
+ ],
+ "peak_rss_mib": {
+  "max": 6711.6,
+  "mean": 159.9,
+  "median": 22.57,
+  "p90": 367.1
+ },
+ "population": 424,
+ "verdicts": {
+  "ore_ont_10009": {
+   "closure": 44,
+   "consistent": true
+  },
+  "ore_ont_10019": {
+   "closure": 157,
+   "consistent": true
+  },
+  "ore_ont_10125": {
+   "closure": 1111855,
+   "consistent": true
+  },
+  "ore_ont_10161": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_10254": {
+   "closure": 15252,
+   "consistent": true
+  },
+  "ore_ont_10320": {
+   "closure": 1879,
+   "consistent": true
+  },
+  "ore_ont_10362": {
+   "closure": 249,
+   "consistent": true
+  },
+  "ore_ont_10388": {
+   "closure": 181,
+   "consistent": true
+  },
+  "ore_ont_10407": {
+   "closure": 910,
+   "consistent": true
+  },
+  "ore_ont_10409": {
+   "closure": 18060,
+   "consistent": true
+  },
+  "ore_ont_10571": {
+   "closure": 375,
+   "consistent": true
+  },
+  "ore_ont_10681": {
+   "closure": 44,
+   "consistent": true
+  },
+  "ore_ont_10689": {
+   "closure": 14809043,
+   "consistent": true
+  },
+  "ore_ont_10702": {
+   "closure": 661,
+   "consistent": true
+  },
+  "ore_ont_10754": {
+   "closure": 507,
+   "consistent": true
+  },
+  "ore_ont_10805": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_10823": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_10838": {
+   "closure": 10640,
+   "consistent": true
+  },
+  "ore_ont_10874": {
+   "closure": 79,
+   "consistent": true
+  },
+  "ore_ont_10894": {
+   "closure": 565,
+   "consistent": true
+  },
+  "ore_ont_10908": {
+   "closure": 6003,
+   "consistent": true
+  },
+  "ore_ont_10952": {
+   "closure": 15208,
+   "consistent": true
+  },
+  "ore_ont_10968": {
+   "closure": 6881,
+   "consistent": true
+  },
+  "ore_ont_10985": {
+   "closure": 18249,
+   "consistent": true
+  },
+  "ore_ont_11016": {
+   "closure": 265,
+   "consistent": true
+  },
+  "ore_ont_11110": {
+   "closure": 187354,
+   "consistent": true
+  },
+  "ore_ont_11157": {
+   "closure": 2249,
+   "consistent": true
+  },
+  "ore_ont_11287": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_11291": {
+   "closure": 220,
+   "consistent": true
+  },
+  "ore_ont_11305": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_11357": {
+   "closure": 225,
+   "consistent": true
+  },
+  "ore_ont_11378": {
+   "closure": 120417,
+   "consistent": true
+  },
+  "ore_ont_11401": {
+   "closure": 333,
+   "consistent": true
+  },
+  "ore_ont_11452": {
+   "closure": 76836,
+   "consistent": true
+  },
+  "ore_ont_11477": {
+   "closure": 834,
+   "consistent": true
+  },
+  "ore_ont_11522": {
+   "closure": 1498,
+   "consistent": true
+  },
+  "ore_ont_11523": {
+   "closure": 15,
+   "consistent": true
+  },
+  "ore_ont_11536": {
+   "closure": 81241,
+   "consistent": true
+  },
+  "ore_ont_11554": {
+   "closure": 548,
+   "consistent": true
+  },
+  "ore_ont_11564": {
+   "closure": 18241,
+   "consistent": true
+  },
+  "ore_ont_11572": {
+   "closure": 935,
+   "consistent": true
+  },
+  "ore_ont_11619": {
+   "closure": 19728,
+   "consistent": true
+  },
+  "ore_ont_11623": {
+   "closure": 28037,
+   "consistent": true
+  },
+  "ore_ont_11647": {
+   "closure": 184,
+   "consistent": true
+  },
+  "ore_ont_11792": {
+   "closure": 2859,
+   "consistent": true
+  },
+  "ore_ont_11834": {
+   "closure": 102,
+   "consistent": true
+  },
+  "ore_ont_11878": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_11896": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_11949": {
+   "closure": 132,
+   "consistent": true
+  },
+  "ore_ont_11989": {
+   "closure": 18073,
+   "consistent": true
+  },
+  "ore_ont_1199": {
+   "closure": 56408,
+   "consistent": true
+  },
+  "ore_ont_12007": {
+   "closure": 1363,
+   "consistent": true
+  },
+  "ore_ont_12039": {
+   "closure": 18626,
+   "consistent": true
+  },
+  "ore_ont_12043": {
+   "closure": 19974,
+   "consistent": true
+  },
+  "ore_ont_12061": {
+   "closure": 972,
+   "consistent": true
+  },
+  "ore_ont_12112": {
+   "closure": 48,
+   "consistent": true
+  },
+  "ore_ont_12141": {
+   "closure": 908,
+   "consistent": true
+  },
+  "ore_ont_12150": {
+   "closure": 121,
+   "consistent": true
+  },
+  "ore_ont_12174": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_12191": {
+   "closure": 121101,
+   "consistent": true
+  },
+  "ore_ont_1222": {
+   "closure": 42,
+   "consistent": true
+  },
+  "ore_ont_12253": {
+   "closure": 157,
+   "consistent": true
+  },
+  "ore_ont_12269": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_12325": {
+   "closure": 15545,
+   "consistent": true
+  },
+  "ore_ont_12342": {
+   "closure": 2027,
+   "consistent": true
+  },
+  "ore_ont_12369": {
+   "closure": 47,
+   "consistent": true
+  },
+  "ore_ont_12415": {
+   "closure": 4,
+   "consistent": true
+  },
+  "ore_ont_12418": {
+   "closure": 17771,
+   "consistent": true
+  },
+  "ore_ont_12433": {
+   "closure": 1184,
+   "consistent": true
+  },
+  "ore_ont_12536": {
+   "closure": 92129,
+   "consistent": true
+  },
+  "ore_ont_12567": {
+   "closure": 2512019,
+   "consistent": true
+  },
+  "ore_ont_12653": {
+   "closure": 10,
+   "consistent": true
+  },
+  "ore_ont_12698": {
+   "closure": 126736,
+   "consistent": true
+  },
+  "ore_ont_12792": {
+   "closure": 43914,
+   "consistent": true
+  },
+  "ore_ont_12801": {
+   "closure": 10375,
+   "consistent": true
+  },
+  "ore_ont_12824": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_12884": {
+   "closure": 18060,
+   "consistent": true
+  },
+  "ore_ont_12916": {
+   "closure": 18306,
+   "consistent": true
+  },
+  "ore_ont_12932": {
+   "closure": 443,
+   "consistent": true
+  },
+  "ore_ont_12985": {
+   "closure": 219799,
+   "consistent": true
+  },
+  "ore_ont_13035": {
+   "closure": 2271,
+   "consistent": true
+  },
+  "ore_ont_13053": {
+   "closure": 1747,
+   "consistent": true
+  },
+  "ore_ont_1306": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_13064": {
+   "closure": 81,
+   "consistent": true
+  },
+  "ore_ont_13071": {
+   "closure": 115134,
+   "consistent": true
+  },
+  "ore_ont_1310": {
+   "closure": 35710,
+   "consistent": true
+  },
+  "ore_ont_13129": {
+   "closure": 85,
+   "consistent": true
+  },
+  "ore_ont_13153": {
+   "closure": 13619,
+   "consistent": true
+  },
+  "ore_ont_13299": {
+   "closure": 29342,
+   "consistent": true
+  },
+  "ore_ont_13306": {
+   "closure": 30,
+   "consistent": true
+  },
+  "ore_ont_13404": {
+   "closure": 1694,
+   "consistent": true
+  },
+  "ore_ont_1342": {
+   "closure": 73,
+   "consistent": true
+  },
+  "ore_ont_13430": {
+   "closure": 8838,
+   "consistent": true
+  },
+  "ore_ont_13451": {
+   "closure": 105475,
+   "consistent": true
+  },
+  "ore_ont_13545": {
+   "closure": 22504,
+   "consistent": true
+  },
+  "ore_ont_13646": {
+   "closure": 4570,
+   "consistent": true
+  },
+  "ore_ont_13680": {
+   "closure": 15,
+   "consistent": true
+  },
+  "ore_ont_13700": {
+   "closure": 19475,
+   "consistent": true
+  },
+  "ore_ont_13723": {
+   "closure": 10166,
+   "consistent": true
+  },
+  "ore_ont_13737": {
+   "closure": 124,
+   "consistent": true
+  },
+  "ore_ont_13759": {
+   "closure": 284,
+   "consistent": true
+  },
+  "ore_ont_13859": {
+   "closure": 6253,
+   "consistent": true
+  },
+  "ore_ont_13885": {
+   "closure": 48,
+   "consistent": true
+  },
+  "ore_ont_13897": {
+   "closure": 405,
+   "consistent": true
+  },
+  "ore_ont_13954": {
+   "closure": 638,
+   "consistent": true
+  },
+  "ore_ont_1397": {
+   "closure": 659,
+   "consistent": true
+  },
+  "ore_ont_13991": {
+   "closure": 7602,
+   "consistent": true
+  },
+  "ore_ont_14042": {
+   "closure": 11609,
+   "consistent": true
+  },
+  "ore_ont_14066": {
+   "closure": 19929,
+   "consistent": true
+  },
+  "ore_ont_14128": {
+   "closure": 317,
+   "consistent": true
+  },
+  "ore_ont_14175": {
+   "closure": 298,
+   "consistent": true
+  },
+  "ore_ont_14183": {
+   "closure": 24461,
+   "consistent": true
+  },
+  "ore_ont_1420": {
+   "closure": 141,
+   "consistent": true
+  },
+  "ore_ont_14334": {
+   "closure": 593,
+   "consistent": true
+  },
+  "ore_ont_14351": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_14355": {
+   "closure": 313897,
+   "consistent": true
+  },
+  "ore_ont_14379": {
+   "closure": 75,
+   "consistent": true
+  },
+  "ore_ont_14396": {
+   "closure": 6057,
+   "consistent": true
+  },
+  "ore_ont_14412": {
+   "closure": 102,
+   "consistent": true
+  },
+  "ore_ont_14459": {
+   "closure": 13114303,
+   "consistent": true
+  },
+  "ore_ont_1478": {
+   "closure": 756,
+   "consistent": true
+  },
+  "ore_ont_14800": {
+   "closure": 227,
+   "consistent": true
+  },
+  "ore_ont_1481": {
+   "closure": 11106,
+   "consistent": true
+  },
+  "ore_ont_14816": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_14818": {
+   "closure": 24153,
+   "consistent": true
+  },
+  "ore_ont_14826": {
+   "closure": 1777,
+   "consistent": true
+  },
+  "ore_ont_14848": {
+   "closure": 15,
+   "consistent": true
+  },
+  "ore_ont_14883": {
+   "closure": 283,
+   "consistent": true
+  },
+  "ore_ont_14896": {
+   "closure": 24434,
+   "consistent": true
+  },
+  "ore_ont_14919": {
+   "closure": 18110,
+   "consistent": true
+  },
+  "ore_ont_14936": {
+   "closure": 1188,
+   "consistent": true
+  },
+  "ore_ont_15010": {
+   "closure": 284,
+   "consistent": true
+  },
+  "ore_ont_15030": {
+   "closure": 65,
+   "consistent": true
+  },
+  "ore_ont_15066": {
+   "closure": 63167,
+   "consistent": true
+  },
+  "ore_ont_1509": {
+   "closure": 2106,
+   "consistent": true
+  },
+  "ore_ont_15167": {
+   "closure": 183,
+   "consistent": true
+  },
+  "ore_ont_15178": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_15184": {
+   "closure": 18060,
+   "consistent": true
+  },
+  "ore_ont_1524": {
+   "closure": 436,
+   "consistent": true
+  },
+  "ore_ont_15260": {
+   "closure": 77577,
+   "consistent": true
+  },
+  "ore_ont_15273": {
+   "closure": 4821,
+   "consistent": true
+  },
+  "ore_ont_15297": {
+   "closure": 13911,
+   "consistent": true
+  },
+  "ore_ont_15341": {
+   "closure": 14321,
+   "consistent": true
+  },
+  "ore_ont_15491": {
+   "closure": 56751,
+   "consistent": true
+  },
+  "ore_ont_15516": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_15672": {
+   "closure": 142,
+   "consistent": true
+  },
+  "ore_ont_15680": {
+   "closure": 1180,
+   "consistent": true
+  },
+  "ore_ont_15682": {
+   "closure": 517,
+   "consistent": true
+  },
+  "ore_ont_15685": {
+   "closure": 5882,
+   "consistent": true
+  },
+  "ore_ont_15737": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_15791": {
+   "closure": 273,
+   "consistent": true
+  },
+  "ore_ont_15846": {
+   "closure": 10640,
+   "consistent": true
+  },
+  "ore_ont_15860": {
+   "closure": 23759,
+   "consistent": true
+  },
+  "ore_ont_15871": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_15878": {
+   "closure": 78570,
+   "consistent": true
+  },
+  "ore_ont_15933": {
+   "closure": 750,
+   "consistent": true
+  },
+  "ore_ont_15950": {
+   "closure": 11322,
+   "consistent": true
+  },
+  "ore_ont_15971": {
+   "closure": 18,
+   "consistent": true
+  },
+  "ore_ont_15993": {
+   "closure": 44,
+   "consistent": true
+  },
+  "ore_ont_1603": {
+   "closure": 2765,
+   "consistent": true
+  },
+  "ore_ont_16105": {
+   "closure": 9291,
+   "consistent": true
+  },
+  "ore_ont_16115": {
+   "closure": 1570,
+   "consistent": true
+  },
+  "ore_ont_16120": {
+   "closure": 17776,
+   "consistent": true
+  },
+  "ore_ont_1618": {
+   "closure": 5,
+   "consistent": true
+  },
+  "ore_ont_16274": {
+   "closure": 321,
+   "consistent": true
+  },
+  "ore_ont_16315": {
+   "closure": 10640,
+   "consistent": true
+  },
+  "ore_ont_16321": {
+   "closure": 81,
+   "consistent": true
+  },
+  "ore_ont_16372": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_16457": {
+   "closure": 891,
+   "consistent": true
+  },
+  "ore_ont_1646": {
+   "closure": 585,
+   "consistent": true
+  },
+  "ore_ont_16481": {
+   "closure": 357,
+   "consistent": true
+  },
+  "ore_ont_16535": {
+   "closure": 197,
+   "consistent": true
+  },
+  "ore_ont_16547": {
+   "closure": 18555,
+   "consistent": true
+  },
+  "ore_ont_16558": {
+   "closure": 27471,
+   "consistent": true
+  },
+  "ore_ont_16626": {
+   "closure": 1306,
+   "consistent": true
+  },
+  "ore_ont_16666": {
+   "closure": 81679,
+   "consistent": true
+  },
+  "ore_ont_16708": {
+   "closure": 681,
+   "consistent": true
+  },
+  "ore_ont_16738": {
+   "closure": 17771,
+   "consistent": true
+  },
+  "ore_ont_16800": {
+   "closure": 7035,
+   "consistent": true
+  },
+  "ore_ont_16806": {
+   "closure": 44561,
+   "consistent": true
+  },
+  "ore_ont_16829": {
+   "closure": 338497,
+   "consistent": true
+  },
+  "ore_ont_16847": {
+   "closure": 919,
+   "consistent": true
+  },
+  "ore_ont_16853": {
+   "closure": 300,
+   "consistent": true
+  },
+  "ore_ont_1734": {
+   "closure": 9746,
+   "consistent": true
+  },
+  "ore_ont_1746": {
+   "closure": 431,
+   "consistent": true
+  },
+  "ore_ont_1784": {
+   "closure": 470,
+   "consistent": true
+  },
+  "ore_ont_1821": {
+   "closure": 6725,
+   "consistent": true
+  },
+  "ore_ont_1823": {
+   "closure": 116,
+   "consistent": true
+  },
+  "ore_ont_185": {
+   "closure": 140,
+   "consistent": true
+  },
+  "ore_ont_1853": {
+   "closure": 98,
+   "consistent": true
+  },
+  "ore_ont_1866": {
+   "closure": 44,
+   "consistent": true
+  },
+  "ore_ont_1898": {
+   "closure": 16,
+   "consistent": true
+  },
+  "ore_ont_1931": {
+   "closure": 165,
+   "consistent": true
+  },
+  "ore_ont_1944": {
+   "closure": 15,
+   "consistent": true
+  },
+  "ore_ont_1958": {
+   "closure": 2802,
+   "consistent": true
+  },
+  "ore_ont_1966": {
+   "closure": 217301,
+   "consistent": true
+  },
+  "ore_ont_1997": {
+   "closure": 234,
+   "consistent": true
+  },
+  "ore_ont_2063": {
+   "closure": 5897,
+   "consistent": true
+  },
+  "ore_ont_2105": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_2128": {
+   "closure": 12341,
+   "consistent": true
+  },
+  "ore_ont_218": {
+   "closure": 60592,
+   "consistent": true
+  },
+  "ore_ont_2182": {
+   "closure": 293,
+   "consistent": true
+  },
+  "ore_ont_2232": {
+   "closure": 9665,
+   "consistent": true
+  },
+  "ore_ont_2313": {
+   "closure": 13930,
+   "consistent": true
+  },
+  "ore_ont_2318": {
+   "closure": 26613,
+   "consistent": true
+  },
+  "ore_ont_2486": {
+   "closure": 714466,
+   "consistent": true
+  },
+  "ore_ont_2526": {
+   "closure": 82,
+   "consistent": true
+  },
+  "ore_ont_2548": {
+   "closure": 19547,
+   "consistent": true
+  },
+  "ore_ont_2604": {
+   "closure": 17669,
+   "consistent": true
+  },
+  "ore_ont_2661": {
+   "closure": 20389,
+   "consistent": true
+  },
+  "ore_ont_2677": {
+   "closure": 24717,
+   "consistent": true
+  },
+  "ore_ont_2678": {
+   "closure": 44,
+   "consistent": true
+  },
+  "ore_ont_2703": {
+   "closure": 15021,
+   "consistent": true
+  },
+  "ore_ont_2792": {
+   "closure": 82578,
+   "consistent": true
+  },
+  "ore_ont_2826": {
+   "closure": 661,
+   "consistent": true
+  },
+  "ore_ont_2848": {
+   "closure": 29030,
+   "consistent": true
+  },
+  "ore_ont_2950": {
+   "closure": 4821,
+   "consistent": true
+  },
+  "ore_ont_3010": {
+   "closure": 661,
+   "consistent": true
+  },
+  "ore_ont_304": {
+   "closure": 1710,
+   "consistent": true
+  },
+  "ore_ont_3050": {
+   "closure": 17771,
+   "consistent": true
+  },
+  "ore_ont_3060": {
+   "closure": 77,
+   "consistent": true
+  },
+  "ore_ont_3077": {
+   "closure": 115851,
+   "consistent": true
+  },
+  "ore_ont_3087": {
+   "closure": 10640,
+   "consistent": true
+  },
+  "ore_ont_3102": {
+   "closure": 16586,
+   "consistent": true
+  },
+  "ore_ont_3156": {
+   "closure": 661,
+   "consistent": true
+  },
+  "ore_ont_3214": {
+   "closure": 24434,
+   "consistent": true
+  },
+  "ore_ont_3258": {
+   "closure": 2902,
+   "consistent": true
+  },
+  "ore_ont_3259": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_3262": {
+   "closure": 1105,
+   "consistent": true
+  },
+  "ore_ont_3270": {
+   "closure": 15,
+   "consistent": true
+  },
+  "ore_ont_3274": {
+   "closure": 396406,
+   "consistent": true
+  },
+  "ore_ont_3329": {
+   "closure": 17771,
+   "consistent": true
+  },
+  "ore_ont_3344": {
+   "closure": 981,
+   "consistent": true
+  },
+  "ore_ont_3357": {
+   "closure": 24434,
+   "consistent": true
+  },
+  "ore_ont_336": {
+   "closure": 24801,
+   "consistent": true
+  },
+  "ore_ont_3381": {
+   "closure": 24153,
+   "consistent": true
+  },
+  "ore_ont_3411": {
+   "closure": 372,
+   "consistent": true
+  },
+  "ore_ont_3504": {
+   "closure": 91,
+   "consistent": true
+  },
+  "ore_ont_3561": {
+   "closure": 456,
+   "consistent": true
+  },
+  "ore_ont_3685": {
+   "closure": 699,
+   "consistent": true
+  },
+  "ore_ont_3708": {
+   "closure": 73,
+   "consistent": true
+  },
+  "ore_ont_3733": {
+   "closure": 867534,
+   "consistent": true
+  },
+  "ore_ont_3737": {
+   "closure": 203170,
+   "consistent": true
+  },
+  "ore_ont_3770": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_3806": {
+   "closure": 1046,
+   "consistent": true
+  },
+  "ore_ont_3843": {
+   "closure": 337,
+   "consistent": true
+  },
+  "ore_ont_3873": {
+   "closure": 63259,
+   "consistent": true
+  },
+  "ore_ont_3917": {
+   "closure": 112109,
+   "consistent": true
+  },
+  "ore_ont_399": {
+   "closure": 24365,
+   "consistent": true
+  },
+  "ore_ont_4092": {
+   "closure": 23524,
+   "consistent": true
+  },
+  "ore_ont_412": {
+   "closure": 20891,
+   "consistent": true
+  },
+  "ore_ont_4198": {
+   "closure": 81,
+   "consistent": true
+  },
+  "ore_ont_4516": {
+   "closure": 1298,
+   "consistent": true
+  },
+  "ore_ont_4567": {
+   "closure": 92808,
+   "consistent": true
+  },
+  "ore_ont_4609": {
+   "closure": 1180,
+   "consistent": true
+  },
+  "ore_ont_4668": {
+   "closure": 13,
+   "consistent": true
+  },
+  "ore_ont_4719": {
+   "closure": 212,
+   "consistent": true
+  },
+  "ore_ont_4798": {
+   "closure": 44582,
+   "consistent": true
+  },
+  "ore_ont_4802": {
+   "closure": 1312756,
+   "consistent": true
+  },
+  "ore_ont_4897": {
+   "closure": 782,
+   "consistent": true
+  },
+  "ore_ont_4903": {
+   "closure": 12135,
+   "consistent": true
+  },
+  "ore_ont_5033": {
+   "closure": 77,
+   "consistent": true
+  },
+  "ore_ont_509": {
+   "closure": 13671,
+   "consistent": true
+  },
+  "ore_ont_5107": {
+   "closure": 96,
+   "consistent": true
+  },
+  "ore_ont_5184": {
+   "closure": 369,
+   "consistent": true
+  },
+  "ore_ont_5206": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_5213": {
+   "closure": 13635,
+   "consistent": true
+  },
+  "ore_ont_5255": {
+   "closure": 259,
+   "consistent": true
+  },
+  "ore_ont_5303": {
+   "closure": 235,
+   "consistent": true
+  },
+  "ore_ont_5324": {
+   "closure": 2314,
+   "consistent": true
+  },
+  "ore_ont_5359": {
+   "closure": 2420,
+   "consistent": true
+  },
+  "ore_ont_541": {
+   "closure": 166,
+   "consistent": true
+  },
+  "ore_ont_5448": {
+   "closure": 18103,
+   "consistent": true
+  },
+  "ore_ont_5502": {
+   "closure": 17278,
+   "consistent": true
+  },
+  "ore_ont_5509": {
+   "closure": 883,
+   "consistent": true
+  },
+  "ore_ont_5617": {
+   "closure": 62005,
+   "consistent": true
+  },
+  "ore_ont_5679": {
+   "closure": 302,
+   "consistent": true
+  },
+  "ore_ont_5688": {
+   "closure": 5553,
+   "consistent": true
+  },
+  "ore_ont_5707": {
+   "closure": 4687,
+   "consistent": true
+  },
+  "ore_ont_5753": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_5760": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_5834": {
+   "closure": 661,
+   "consistent": true
+  },
+  "ore_ont_5894": {
+   "closure": 13831,
+   "consistent": true
+  },
+  "ore_ont_5927": {
+   "closure": 841826,
+   "consistent": true
+  },
+  "ore_ont_5943": {
+   "closure": 24461,
+   "consistent": true
+  },
+  "ore_ont_5964": {
+   "closure": 4391,
+   "consistent": true
+  },
+  "ore_ont_6020": {
+   "closure": 1041,
+   "consistent": true
+  },
+  "ore_ont_6111": {
+   "closure": 56536,
+   "consistent": true
+  },
+  "ore_ont_6198": {
+   "closure": 43592,
+   "consistent": true
+  },
+  "ore_ont_6233": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_6246": {
+   "closure": 322,
+   "consistent": true
+  },
+  "ore_ont_6258": {
+   "closure": 539,
+   "consistent": true
+  },
+  "ore_ont_6272": {
+   "closure": 357,
+   "consistent": true
+  },
+  "ore_ont_6423": {
+   "closure": 20434,
+   "consistent": true
+  },
+  "ore_ont_6433": {
+   "closure": 48600,
+   "consistent": true
+  },
+  "ore_ont_6437": {
+   "closure": 4483,
+   "consistent": true
+  },
+  "ore_ont_6446": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_6452": {
+   "closure": 20154,
+   "consistent": true
+  },
+  "ore_ont_6470": {
+   "closure": 15,
+   "consistent": true
+  },
+  "ore_ont_6478": {
+   "closure": 57134,
+   "consistent": true
+  },
+  "ore_ont_6495": {
+   "closure": 116,
+   "consistent": true
+  },
+  "ore_ont_6615": {
+   "closure": 84,
+   "consistent": true
+  },
+  "ore_ont_6722": {
+   "closure": 456423,
+   "consistent": true
+  },
+  "ore_ont_6726": {
+   "closure": 48324,
+   "consistent": true
+  },
+  "ore_ont_6727": {
+   "closure": 15659,
+   "consistent": true
+  },
+  "ore_ont_6737": {
+   "closure": 401,
+   "consistent": true
+  },
+  "ore_ont_6822": {
+   "closure": 2474,
+   "consistent": true
+  },
+  "ore_ont_6857": {
+   "closure": 2520,
+   "consistent": true
+  },
+  "ore_ont_6889": {
+   "closure": 499,
+   "consistent": true
+  },
+  "ore_ont_6934": {
+   "closure": 449,
+   "consistent": true
+  },
+  "ore_ont_6951": {
+   "closure": 71,
+   "consistent": true
+  },
+  "ore_ont_6967": {
+   "closure": 713,
+   "consistent": true
+  },
+  "ore_ont_699": {
+   "closure": 117155,
+   "consistent": true
+  },
+  "ore_ont_7007": {
+   "closure": 174,
+   "consistent": true
+  },
+  "ore_ont_7011": {
+   "closure": 1215,
+   "consistent": true
+  },
+  "ore_ont_703": {
+   "closure": 2998,
+   "consistent": true
+  },
+  "ore_ont_7079": {
+   "closure": 24941,
+   "consistent": true
+  },
+  "ore_ont_7108": {
+   "closure": 15634,
+   "consistent": true
+  },
+  "ore_ont_7179": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_7192": {
+   "closure": 96592,
+   "consistent": true
+  },
+  "ore_ont_7203": {
+   "closure": 26675,
+   "consistent": true
+  },
+  "ore_ont_7204": {
+   "closure": 133197,
+   "consistent": true
+  },
+  "ore_ont_7226": {
+   "closure": 4937,
+   "consistent": true
+  },
+  "ore_ont_7237": {
+   "closure": 23500,
+   "consistent": true
+  },
+  "ore_ont_7339": {
+   "closure": 34,
+   "consistent": true
+  },
+  "ore_ont_7370": {
+   "closure": 389455,
+   "consistent": true
+  },
+  "ore_ont_7416": {
+   "closure": 195533,
+   "consistent": true
+  },
+  "ore_ont_7418": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_7474": {
+   "closure": 18056,
+   "consistent": true
+  },
+  "ore_ont_7483": {
+   "closure": 4464,
+   "consistent": true
+  },
+  "ore_ont_7517": {
+   "closure": 187,
+   "consistent": true
+  },
+  "ore_ont_7525": {
+   "closure": 212,
+   "consistent": true
+  },
+  "ore_ont_7532": {
+   "closure": 10550,
+   "consistent": true
+  },
+  "ore_ont_7607": {
+   "closure": 1910,
+   "consistent": true
+  },
+  "ore_ont_7706": {
+   "closure": 46983,
+   "consistent": true
+  },
+  "ore_ont_7726": {
+   "closure": 51399,
+   "consistent": true
+  },
+  "ore_ont_7730": {
+   "closure": 206,
+   "consistent": true
+  },
+  "ore_ont_778": {
+   "closure": 575,
+   "consistent": true
+  },
+  "ore_ont_7817": {
+   "closure": 14870,
+   "consistent": true
+  },
+  "ore_ont_7820": {
+   "closure": 73,
+   "consistent": true
+  },
+  "ore_ont_7877": {
+   "closure": 693,
+   "consistent": true
+  },
+  "ore_ont_7893": {
+   "closure": 971,
+   "consistent": true
+  },
+  "ore_ont_7926": {
+   "closure": 14869,
+   "consistent": true
+  },
+  "ore_ont_795": {
+   "closure": 686322,
+   "consistent": true
+  },
+  "ore_ont_7988": {
+   "closure": 81,
+   "consistent": true
+  },
+  "ore_ont_7995": {
+   "closure": 2,
+   "consistent": true
+  },
+  "ore_ont_8019": {
+   "closure": 5695,
+   "consistent": true
+  },
+  "ore_ont_8042": {
+   "closure": 661,
+   "consistent": true
+  },
+  "ore_ont_8094": {
+   "closure": 161,
+   "consistent": true
+  },
+  "ore_ont_8141": {
+   "closure": 2420,
+   "consistent": true
+  },
+  "ore_ont_8148": {
+   "closure": 83528,
+   "consistent": true
+  },
+  "ore_ont_8166": {
+   "closure": 45,
+   "consistent": true
+  },
+  "ore_ont_8250": {
+   "closure": 730,
+   "consistent": true
+  },
+  "ore_ont_8280": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_8294": {
+   "closure": 18657,
+   "consistent": true
+  },
+  "ore_ont_8298": {
+   "closure": 12200,
+   "consistent": true
+  },
+  "ore_ont_8387": {
+   "closure": 372,
+   "consistent": true
+  },
+  "ore_ont_8396": {
+   "closure": 720,
+   "consistent": true
+  },
+  "ore_ont_8417": {
+   "closure": 24608,
+   "consistent": true
+  },
+  "ore_ont_8431": {
+   "closure": 17877,
+   "consistent": true
+  },
+  "ore_ont_8460": {
+   "closure": 292,
+   "consistent": true
+  },
+  "ore_ont_8470": {
+   "closure": 58166,
+   "consistent": true
+  },
+  "ore_ont_8486": {
+   "closure": 13839004,
+   "consistent": true
+  },
+  "ore_ont_850": {
+   "closure": 661,
+   "consistent": true
+  },
+  "ore_ont_8502": {
+   "closure": 284,
+   "consistent": true
+  },
+  "ore_ont_8509": {
+   "closure": 9201,
+   "consistent": true
+  },
+  "ore_ont_8595": {
+   "closure": 13535,
+   "consistent": true
+  },
+  "ore_ont_8641": {
+   "closure": 17818,
+   "consistent": true
+  },
+  "ore_ont_868": {
+   "closure": 14809043,
+   "consistent": true
+  },
+  "ore_ont_8688": {
+   "closure": 17806,
+   "consistent": true
+  },
+  "ore_ont_8730": {
+   "closure": 1,
+   "consistent": true
+  },
+  "ore_ont_8744": {
+   "closure": 3863,
+   "consistent": true
+  },
+  "ore_ont_8786": {
+   "closure": 659,
+   "consistent": true
+  },
+  "ore_ont_8902": {
+   "closure": 25051,
+   "consistent": true
+  },
+  "ore_ont_891": {
+   "closure": 24461,
+   "consistent": true
+  },
+  "ore_ont_8911": {
+   "closure": 2052,
+   "consistent": true
+  },
+  "ore_ont_8975": {
+   "closure": 375,
+   "consistent": true
+  },
+  "ore_ont_8982": {
+   "closure": 293635,
+   "consistent": true
+  },
+  "ore_ont_9012": {
+   "closure": 841,
+   "consistent": true
+  },
+  "ore_ont_9024": {
+   "closure": 908,
+   "consistent": true
+  },
+  "ore_ont_9053": {
+   "closure": 69266,
+   "consistent": true
+  },
+  "ore_ont_9054": {
+   "closure": 676,
+   "consistent": true
+  },
+  "ore_ont_9151": {
+   "closure": 179922,
+   "consistent": true
+  },
+  "ore_ont_9240": {
+   "closure": 3038,
+   "consistent": true
+  },
+  "ore_ont_9248": {
+   "closure": 14495,
+   "consistent": true
+  },
+  "ore_ont_928": {
+   "closure": 10772,
+   "consistent": true
+  },
+  "ore_ont_9299": {
+   "closure": 37713,
+   "consistent": true
+  },
+  "ore_ont_9303": {
+   "closure": 0,
+   "consistent": false
+  },
+  "ore_ont_9318": {
+   "closure": 86110,
+   "consistent": true
+  },
+  "ore_ont_934": {
+   "closure": 365,
+   "consistent": true
+  },
+  "ore_ont_9347": {
+   "closure": 277,
+   "consistent": true
+  },
+  "ore_ont_9413": {
+   "closure": 316308,
+   "consistent": true
+  },
+  "ore_ont_9435": {
+   "closure": 5016,
+   "consistent": true
+  },
+  "ore_ont_947": {
+   "closure": 17615,
+   "consistent": true
+  },
+  "ore_ont_9557": {
+   "closure": 5,
+   "consistent": true
+  },
+  "ore_ont_9590": {
+   "closure": 11862,
+   "consistent": true
+  },
+  "ore_ont_9596": {
+   "closure": 44437,
+   "consistent": true
+  },
+  "ore_ont_9612": {
+   "closure": 16739,
+   "consistent": true
+  },
+  "ore_ont_9635": {
+   "closure": 163,
+   "consistent": true
+  },
+  "ore_ont_9646": {
+   "closure": 6057,
+   "consistent": true
+  },
+  "ore_ont_9654": {
+   "closure": 1912,
+   "consistent": true
+  },
+  "ore_ont_9662": {
+   "closure": 9161,
+   "consistent": true
+  },
+  "ore_ont_9673": {
+   "closure": 39439,
+   "consistent": true
+  },
+  "ore_ont_9674": {
+   "closure": 14809043,
+   "consistent": true
+  },
+  "ore_ont_9689": {
+   "closure": 125,
+   "consistent": true
+  },
+  "ore_ont_9694": {
+   "closure": 14566,
+   "consistent": true
+  },
+  "ore_ont_9768": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_9783": {
+   "closure": 424,
+   "consistent": true
+  },
+  "ore_ont_9786": {
+   "closure": 8499,
+   "consistent": true
+  },
+  "ore_ont_9794": {
+   "closure": 0,
+   "consistent": true
+  },
+  "ore_ont_9809": {
+   "closure": 66977,
+   "consistent": true
+  },
+  "ore_ont_9854": {
+   "closure": 180,
+   "consistent": true
+  },
+  "ore_ont_9867": {
+   "closure": 108,
+   "consistent": true
+  },
+  "ore_ont_9881": {
+   "closure": 377,
+   "consistent": true
+  },
+  "ore_ont_9904": {
+   "closure": 85,
+   "consistent": true
+  },
+  "ore_ont_9941": {
+   "closure": 910,
+   "consistent": true
+  },
+  "ore_ont_9958": {
+   "closure": 2283,
+   "consistent": true
+  }
+ },
+ "version": "v0.4.23",
+ "wall_s": {
+  "max": 59.7,
+  "mean": 2.6397,
+  "median": 0.21,
+  "p90": 5.32
+ }
+}

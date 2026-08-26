@@ -53,6 +53,18 @@ pub struct RunArgs {
     /// Digest stdout per ontology, enabling `compare` to check answer identity.
     #[arg(long, default_value_t = true)]
     pub digest_output: bool,
+    /// Exclude `#`-prefixed banner lines from the stdout digest.
+    ///
+    /// **Load-bearing for any answer-identity claim.** rustdl's banners carry
+    /// wall-clock timings and a millisecond-bucketed `# wedge-cost-histogram`,
+    /// so a RAW stdout digest is nondeterministic run to run: on a 1920-ontology
+    /// two-arm sweep a raw OFF-vs-ON comparison reported 1133 of 1745 completers
+    /// as DIFFERENT, which is essentially all timing noise. Digesting only the
+    /// non-`#` lines makes `compare`'s answer-identity check mean what it says.
+    /// `out_lines` still counts the FULL stdout, so the record keeps reflecting
+    /// what the reasoner actually printed.
+    #[arg(long, default_value_t = false)]
+    pub digest_strip_comments: bool,
     #[arg(long)]
     pub out: PathBuf,
 }
@@ -188,6 +200,7 @@ pub fn main(a: RunArgs) -> Result<(), String> {
             .unwrap_or(0),
         only_requested,
         only_resolved,
+        digest_strip_comments: a.digest_strip_comments,
     };
     writeln!(w, "{}", serde_json::to_string(&header).unwrap()).ok();
     w.flush().ok();
@@ -308,7 +321,19 @@ pub fn main(a: RunArgs) -> Result<(), String> {
 
         let (out_sha256, out_lines) = if a.digest_output && !stdout.is_empty() {
             let mut h = Sha256::new();
-            h.update(&stdout);
+            if a.digest_strip_comments {
+                // Hash only non-`#` lines. `split_inclusive` keeps each line's
+                // terminator, so the digest still distinguishes outputs that
+                // differ only in line breaks; a final unterminated line is
+                // covered too.
+                for line in stdout.split_inclusive(|&b| b == b'\n') {
+                    if !line.starts_with(b"#") {
+                        h.update(line);
+                    }
+                }
+            } else {
+                h.update(&stdout);
+            }
             (
                 Some(format!("{:x}", h.finalize())),
                 Some(stdout.iter().filter(|&&b| b == b'\n').count()),

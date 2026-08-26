@@ -5,6 +5,11 @@
 # chunks at a SINGLE --out path; their appends interleaved and produced 40 unparseable
 # records plus 73 silently missing ontologies. Per-chunk files, concatenated at the end,
 # make that impossible.
+#
+# SWEEP_EXTRA passes extra flags through to `run`. Set it to
+# --digest-strip-comments whenever the arms will be compared for ANSWER IDENTITY:
+# rustdl's `#` banners carry timings, so a raw digest reports ~65% of completers as
+# DIFFERENT from noise alone (measured 1133 of 1745), which drowns any real diff.
 set -u
 H=/data/dumontier/owl-reasoner-harness
 BIN=$1; TAG=$2; LIST=${3:-}
@@ -18,7 +23,7 @@ for c in 00 01 02 03; do
   [ -s "$D/c$c" ] || continue
   $H/target/release/owl-reasoner-harness run \
     --corpus "$CORPUS" --only "$D/c$c" --reasoner "$BIN" --args 'classify {}' \
-    --cap-secs 60 --threads 1 --ext owl --digest-output \
+    --cap-secs 60 --threads 1 --ext owl --digest-output ${SWEEP_EXTRA:-} \
     --out "$D/$TAG-$c.jsonl" > "$D/$TAG-$c.log" 2>&1 &
 done
 wait

@@ -61,6 +61,40 @@ caused a wrong result before.
 Point the harness at it with `--corpus /path/to/pool_sample/files`, or set `CORPUS=` for the release
 report script.
 
+### Also set `SCRATCH` — its default will not exist on your machine
+
+`release-corpus-report.sh` defaults to an NFS path specific to the original host:
+
+```sh
+SCRATCH=${SCRATCH:-/mnt/um-share-drive/dumontier/missed-net}
+RUN="$SCRATCH/runs/$TAG"; RAW="$SCRATCH/raw/$TAG"
+```
+
+**Override it.** Found by actually checking a second machine (`n3`, 2026-08-26): that mount was
+absent, so a verbatim run of this guide would have failed at the first release report.
+
+```sh
+export SCRATCH=/data/$USER/harness-scratch     # local disk is FINE and faster than NFS
+```
+
+Budget generously — `raw/` accumulates per-ontology output. On the original host it reached **251 GB**
+across 36 sweeps before pruning; a single 1,920-ontology arm is roughly **0.9–2.5 GB**, but census
+runs reached 88 GB. Prune old sweeps deliberately rather than letting them accumulate, and **keep
+any `konclude/` and `hermit/` directories** — those are oracle outputs, expensive to regenerate and
+the basis of every FP=0 adjudication.
+
+### What a bare second machine actually lacked
+
+Measured on `n3` (2026-08-26) — a useful checklist because it is what "bare" really means here:
+
+| present | missing |
+|---|---|
+| `git`, `python3`, `unzip`, **`perf` matching the running kernel** | **`cargo`/`rustc` (no Rust at all)**, `java` (HermiT), the NFS share, the ORE corpus, both repos |
+
+Note `perf` worked there out of the box, whereas the original host needed a matching
+`linux-tools-$(uname -r)` install before `perf record` would run at all. If `perf` is present but
+refuses, that mismatch is the first thing to check.
+
 ## 4. Peer reasoners (for oracle adjudication)
 
 Needed only when adjudicating a suspected FP/MISS — but you *will* need them for that, and
