@@ -24,6 +24,44 @@ python3 --version              # 3.8+ , for the diff/adjudication scripts
 > then **silently reuses a stale `target/release/` binary**. Build and benchmark with
 > `RUSTUP_TOOLCHAIN=stable cargo …`, and always confirm the binary is freshly built.
 
+## 1b. FIRST decide: can the machine BUILD, or only MEASURE?
+
+**Check this before anything else.** A cluster node may have no C toolchain and no root, in which
+case `cargo build` cannot link and §2's "clone and build" path is a dead end.
+
+```sh
+for c in cc gcc clang make; do printf "%-8s %s\n" "$c" "$(command -v $c || echo MISSING)"; done
+sudo -n true 2>/dev/null && echo "sudo: yes" || echo "sudo: NO"
+```
+
+Measured on `n3` (2026-08-27): **`cc`, `gcc`, `clang`, `make`, `pkg-config` all MISSING and no
+passwordless sudo** — `ld` alone is not enough, and `rustup` itself warns *"no default linker (`cc`)
+was found in your PATH"*. There were also no userspace package managers (conda/mamba/spack/brew/nix)
+to install one without root. So that node **cannot build rustdl at all.**
+
+### The build-here / measure-there model
+
+This is not a workaround so much as the natural fit: a big node's value is *running* sweeps, and
+this project already requires pinning a binary per configuration, so the binary is the unit that
+travels.
+
+```sh
+# On the BUILD host:
+ldd --version | head -1                      # compare with the target host FIRST
+cargo build --release                        # per arm
+rsync -a target/release/rustdl                       TARGET:/data/$USER/bin/rustdl.ARM_A
+rsync -a ../owl-reasoner-harness/target/release/owl-reasoner-harness                                                      TARGET:/data/$USER/owl-reasoner-harness/target/release/
+rsync -a --exclude target --exclude .git ../owl-reasoner-harness/ TARGET:/data/$USER/owl-reasoner-harness/
+```
+
+**Verify glibc matches before relying on this.** Both hosts here reported
+`ldd (Ubuntu GLIBC 2.35-0ubuntu3.14) 2.35`, so copied binaries ran unmodified. A target with an
+*older* glibc than the build host will fail at load time with a `GLIBC_x.yz not found` error; build
+on the oldest machine you intend to run on, or build a `musl` target.
+
+Everything else the harness needs — `scripts/`, `wrappers/`, `baselines/`, `skills/` — is shell and
+Python, so it just copies.
+
 ## 2. Repositories
 
 | repo | purpose |
