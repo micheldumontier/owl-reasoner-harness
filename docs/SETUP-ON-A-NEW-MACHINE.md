@@ -203,6 +203,28 @@ ontology. The metrics that matter:
 | **peak RSS** | harness | the multi-GB tail is real but rarer than assumed; most "memory" wins turn out to be skipped compute |
 | **incomplete** | `classify`/`realize --json` | counts pairs *attempted and cut*, **not remaining**. A small value is not evidence of near-completeness: raising a budget took one ontology from `inc=1` to `inc=15,042` with unchanged rows |
 
+### The actual JSONL schema (verified on a real run, not from memory)
+
+Header record: `kind=header`, `reasoner`, `sha256`, `version`, `marker_checked`, `args_template`,
+`threads`, `cap_secs`, `corpus`, `n_candidates`, `host_cores`, `only_requested`, `only_resolved`,
+`digest_strip_comments`.
+
+Per-ontology record:
+
+```json
+{"kind":"case","ont":"ore_ont_10009","outcome":"ok","wall_s":0.18,
+ "peak_rss_kb":9456,"bytes":95858,"skip_reason":null,"out_sha256":null,"out_lines":null}
+```
+
+So the field names are **`wall_s`** and **`peak_rss_kb`** — seconds and kilobytes.
+
+> **`out_sha256` is `null` here, and that is the documented trap, live.** The release process records
+> that a first comparison pass diffed `out_sha256`, reported "0 differences", and was in fact
+> comparing `None != None` for every case in both arms — because the wrapper redirects stdout — while
+> 50 ontologies had genuinely changed output, one by 978,892 rows. **Verify a field is populated
+> before comparing on it.** Compare answers by re-reading the reasoner's own `--json`, not this
+> field.
+
 **Strip `#` banner lines before diffing output** — they carry per-phase wall timings and differ
 between any two runs. Including them once reported 1,322 "unexplained differences" where the truth
 was 0.
