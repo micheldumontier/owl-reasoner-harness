@@ -157,6 +157,51 @@ to `-o`; reading the wrong stream once made a successful 55 ms classification lo
 are unavailable, adjudicate by deriving the disputed entailment from the definitional axioms instead
 of picking a side.
 
+### 4a. Behind an egress proxy (measured 2026-08-29, a Coder/k8s workspace)
+
+`sudo apt-get update` failed on every mirror while `curl https://...` worked as the normal
+user. **It is not a port-80 firewall** — that was my first diagnosis and it was wrong, because
+I compared `sudo apt` against `curl` run *unprivileged*, which is not a controlled comparison.
+
+The host exports `HTTP_PROXY`/`HTTPS_PROXY` (a Squid at `:3128`) and **`sudo`'s `env_reset`
+strips them**, so apt had no route out. Two consequences:
+
+```sh
+P=http://egress-proxy.platform.svc.cluster.local:3128
+printf 'Acquire::http::Proxy "%s";\nAcquire::https::Proxy "%s";\n' "$P" "$P" \
+  | sudo tee /etc/apt/apt.conf.d/99proxy      # persistent; `sudo apt` then just works
+curl -x "$P" ...                              # and use https:// for direct fetches:
+```
+The proxy tunnels `CONNECT` to 443 but does **not** forward plain HTTP, so an `http://` URL
+returns a ~280-byte error page. `dpkg-deb` then says *"not a Debian format archive"*, which
+looks like a corrupt download rather than a refused protocol.
+
+### 4b. Konclude's Linux build needs `libpcre.so.3`
+
+PCRE1 is retired, so `libpcre3` is **not in modern Ubuntu repos** and the binary dies with
+`rc=127` — indistinguishable from the `Binaries/Konclude` shim trap above. `ldd` names the real
+cause. Extract the library from an older `.deb` and point `LD_LIBRARY_PATH` at it:
+
+```sh
+curl -sSL -o p.deb https://archive.ubuntu.com/ubuntu/pool/main/p/pcre3/libpcre3_8.39-9ubuntu0.1_amd64.deb
+dpkg-deb -x p.deb ext && cp ext/lib/x86_64-linux-gnu/libpcre.so.3* ~/peers/lib/
+```
+
+**Do NOT symlink PCRE2 to `libpcre.so.3`.** An ABI mismatch could silently corrupt oracle
+output, which is strictly worse than having no oracle. **Validate a fresh peer build against a
+known answer before trusting it**: the Linux Konclude reproduced the OSX closure on
+`ore_ont_778` exactly (630 = 630), which is what licensed using it.
+
+### 4c. HermiT output must be named `.owx`, whatever is inside it
+
+`missed-net.py` has `FMT_SUFFIX = {"rustdl": ".out", "konclude": ".owx", "hermit": ".owx"}`
+while HermiT via robot's CommandLine writes **functional syntax**. Naming its output `.ofn` —
+the honest extension — makes the analyser find nothing: 322 real oracle files went invisible,
+389 ontologies scored `hermit: NO_OUTPUT`, and the union oracle silently degraded to
+**Konclude-only**. Konclude under-reports, so MISSED is then understated with no error emitted
+anywhere. Check `oracle_source` before trusting a net: a healthy union run reads
+`both / konclude / hermit`, not `konclude` for everything.
+
 ## 5. The two-arm method
 
 ```sh
