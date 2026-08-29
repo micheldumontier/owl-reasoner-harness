@@ -16,7 +16,10 @@
 # NOTE: KM emits Tseitin definers (Q_1, Q_10, ...) in `subsumptions`; filter them
 # before any closure comparison. This run judges OUTCOME only.
 B=/data/dumontier/owl-reasoner-harness/bin/km-v0232-44d86fa
-ulimit -v $((20*1024*1024))
+# Address-space cap; skipped where the platform has no RLIMIT_AS (Darwin). An
+# unguarded failure here exits the wrapper before the reasoner runs — see
+# run-rustdl-json.sh for the incident that caused.
+ulimit -v $((20*1024*1024)) 2>/dev/null || true
 if [ -n "${HARNESS_OUT_DIR:-}" ]; then
   mkdir -p "$HARNESS_OUT_DIR"
   exec sh -c "\"\$0\"/km classify --route production_all \"\$1\" | tee \"\$2\"" \

@@ -13,4 +13,7 @@ if [ -n "${HARNESS_OUT_DIR:-}" ]; then
 else
   out="${2:-/dev/null}"
 fi
-exec /data/dumontier/reasoners/konclude classification -i "$1" -o "$out"
+# BINARY PATH is env-overridable: the cluster default is kept, but a second machine
+# (or a non-Linux host) needs its own build. Set KONCLUDE_BIN to the REAL executable
+# -- `<dist>/Binaries/Konclude`, not the top-level shim, which fails rc=127.
+exec "${KONCLUDE_BIN:-/data/dumontier/reasoners/konclude}" classification -i "$1" -o "$out"

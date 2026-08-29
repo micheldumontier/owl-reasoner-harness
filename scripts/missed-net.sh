@@ -21,7 +21,8 @@
 # $SCRATCH on the shared volume. The root filesystem was at 97% / 15 GB free when this
 # was written and one rustdl corpus pass alone emits ~15 GB of closures.
 set -u
-H=/data/dumontier/owl-reasoner-harness
+# Harness root: env-overridable so the net runs off-cluster (default = cluster path).
+H=${MISSED_NET_HARNESS_ROOT:-/data/dumontier/owl-reasoner-harness}
 SCRATCH=${MISSED_NET_SCRATCH:-/mnt/um-share-drive/dumontier/missed-net}
 CORPUS=${MISSED_NET_CORPUS:-/data/dumontier/ore-run/pool_sample/files}
 CAP=${CAP:-60}
@@ -115,12 +116,15 @@ EOF
 peer)
   peer=${1:?konclude|hermit}; list=${2:?listfile}
   case "$peer" in
-    konclude) wrapper=/data/dumontier/reasoners/run-konclude.sh ;;
-    hermit)   wrapper=/data/dumontier/reasoners/run-hermit.sh ;;
+    # Wrapper paths are env-overridable so the net can run off-cluster; the cluster
+    # paths remain the defaults. The wrapper, not this script, resolves the binary.
+    konclude) wrapper=${KONCLUDE_WRAPPER:-/data/dumontier/reasoners/run-konclude.sh} ;;
+    hermit)   wrapper=${HERMIT_WRAPPER:-/data/dumontier/reasoners/run-hermit.sh} ;;
     # KM is deliberately NOT an oracle leg: under its MANDATORY 20 GB cap it cannot even
     # classify pizza on this host, and it is measured-unsound on ~1795 ORE ontologies.
     *) die "peer must be konclude or hermit (KM is not an oracle: measured unsound)" ;;
   esac
+  [ -x "$wrapper" ] || die "peer wrapper not executable: $wrapper (set ${peer^^}_WRAPPER)"
   mkdir -p "$SCRATCH/runs/$peer"
   cat > "$SCRATCH/runs/$peer/manifest.json" <<EOF
 {"arm":"$peer","wrapper":"$wrapper","cap_secs":${PEER_CAP:-120},"threads":1,

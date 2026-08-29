@@ -6,7 +6,10 @@
 # NOTE: KM emits Tseitin definers (Q_1, Q_10, ...) in `subsumptions`; filter them
 # before any closure comparison.
 E=/data/dumontier/kobayashi-marust/engine/target/release
-ulimit -v $((20*1024*1024))
+# Address-space cap; skipped where the platform has no RLIMIT_AS (Darwin). An
+# unguarded failure here exits the wrapper before the reasoner runs — see
+# run-rustdl-json.sh for the incident that caused.
+ulimit -v $((20*1024*1024)) 2>/dev/null || true
 # HARNESS_OUT_DIR, if set, tees KM's JSON to a file so outcome can be decided from
 # content (see run-konclude.sh). stdout is preserved either way.
 if [ -n "${HARNESS_OUT_DIR:-}" ]; then

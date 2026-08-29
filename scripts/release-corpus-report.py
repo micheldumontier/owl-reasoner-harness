@@ -14,7 +14,7 @@ because omitting it produced a wrong published number at least once:
 * PERCENTILES, NOT MEANS ALONE. This corpus is dominated by sub-second ontologies
   and decided by a heavy tail; a mean hides both.
 """
-import argparse, json, os, statistics, sys
+import argparse, collections, json, os, statistics, sys
 
 
 def load_case_jsonls(run_dir):
@@ -112,6 +112,29 @@ def main():
         ex = cases[skipped[0]].get("skip_reason", "")
         sys.exit(f"ABORT: {len(skipped)}/{len(cases)} ontologies were SKIPPED, not run "
                  f"— the sweep did not happen. First reason: {ex}")
+    # SAME RULE, SECOND SHAPE (2026-08-29). The `skipped` guard above catches a run
+    # the harness never started. It does NOT catch a run where every case STARTED and
+    # the wrapper died: those land as `err_reject`, are counted as DNF, and the report
+    # reads "0 classified / 424 DNF" — after which the confirmation pass re-runs the
+    # "losses" at 3x cap, finds they classify in 0.0s, and prints "CAP-BORDERLINE,
+    # gate PASSES". A total measurement failure thus reported as a PASS, twice.
+    #
+    # Cause that day: `wrappers/*.sh` set `ulimit -v`, which Darwin has no RLIMIT_AS
+    # for, so the wrapper exited before invoking the reasoner. An ontology that
+    # classifies in 0.0s at 180s was never cap-borderline at 60s.
+    by_outcome = collections.Counter(r.get("outcome") for r in cases.values())
+    n_ok_outcome = by_outcome.get("ok", 0)
+    if cases and n_ok_outcome == 0:
+        top = by_outcome.most_common(1)[0]
+        sys.exit(f"ABORT: 0 of {len(cases)} ontologies produced outcome `ok` "
+                 f"(most common: `{top[0]}` x{top[1]}) — the instrument failed, this is "
+                 f"not a result. Check the wrapper runs standalone before re-running.")
+    for outcome, n in by_outcome.items():
+        if outcome not in ("ok", "timeout") and n > len(cases) // 2:
+            sys.exit(f"ABORT: {n}/{len(cases)} ontologies share the single failure "
+                     f"outcome `{outcome}` — that is an instrument fault, not a "
+                     f"population of hard ontologies.")
+
     ok = {k: r for k, r in cases.items() if r.get("outcome") == "ok" and k in verd}
     dnf = [k for k, r in cases.items() if r.get("outcome") != "ok"]
     # exit-0-but-no-output: counted as NOT classified, per the content rule

@@ -36,7 +36,13 @@ set -u
 case "${1:-}" in
   --version | -V) exec "$MISSED_NET_RUSTDL" --version ;;
 esac
-ulimit -v $((24 * 1024 * 1024))
+# `ulimit -v` caps ADDRESS SPACE (RLIMIT_AS). Darwin has no RLIMIT_AS, so on macOS
+# this call fails — and an unguarded failure here exits the wrapper BEFORE the
+# reasoner runs, turning every case into `err_reject` in ~1ms. The release corpus
+# report then read that as `0 classified / 424 DNF` and its confirmation pass
+# relabelled the wreckage "CAP-BORDERLINE, gate PASSES" (2026-08-29). Apply the cap
+# where the platform supports it; skip it where it does not.
+ulimit -v $((24 * 1024 * 1024)) 2>/dev/null || true
 if [ -n "${HARNESS_OUT_DIR:-}" ]; then
   mkdir -p "$HARNESS_OUT_DIR"
   out="$HARNESS_OUT_DIR/$(basename "${1%.*}").out"
