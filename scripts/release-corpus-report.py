@@ -14,7 +14,7 @@ because omitting it produced a wrong published number at least once:
 * PERCENTILES, NOT MEANS ALONE. This corpus is dominated by sub-second ontologies
   and decided by a heavy tail; a mean hides both.
 """
-import argparse, collections, json, os, statistics, sys
+import argparse, collections, json, os, platform, statistics, sys
 
 
 def load_case_jsonls(run_dir):
@@ -146,6 +146,19 @@ def main():
         "version": a.version,
         "binary_sha": a.binary_sha,
         "cap_secs": a.cap_secs,
+        # HOST PROVENANCE (2026-08-29). The `lost_ontologies` gate is CAP-SENSITIVE:
+        # it asks whether an ontology finished inside --cap-secs. That is a property of
+        # the MACHINE as much as of the binary, so comparing against a baseline measured
+        # elsewhere is not a valid comparison. Measured: a v0.4.23 baseline from a faster
+        # host made a good v0.4.24 build report `2 ontologies lost` and FAIL. Re-measuring
+        # the SAME v0.4.23 binary on the candidate's host moved the median 0.21s -> 0.53s
+        # (2.5x, across all 424) and the gate went to PASS with 0 lost -- the candidate in
+        # fact classified one MORE. Both "lost" ontologies were near the cap (~49s and
+        # ~59s standalone) and are arm-identical on 3 alternating-order runs.
+        # Record the host so a cross-host comparison is at least VISIBLE; re-baseline on
+        # the machine you are gating on.
+        "host": {"node": platform.node(), "system": platform.system(),
+                 "machine": platform.machine(), "cpu_count": os.cpu_count()},
         "population": len(cases),
         "classified": len(ok),
         "dnf": len(dnf),
@@ -197,6 +210,22 @@ def main():
         flips, lost, cregs = gate["verdict_flips"], gate["lost_ontologies"], gate["closure_regressions"]
         status = "PASS" if not (flips or lost) else "**FAIL**"
         L.append(f"**Gate vs `{base.get('version','baseline')}`: {status}**\n")
+        # CROSS-HOST BASELINES INVALIDATE THE CAP-SENSITIVE HALF OF THIS GATE.
+        # `lost_ontologies` asks "did it finish inside the cap", which the machine
+        # decides as much as the binary. Say so loudly rather than letting a hardware
+        # difference read as a regression (it did once; see the `host` key above).
+        bh = base.get("host") or {}
+        ch = cur["host"]
+        if not bh:
+            L.append(f"> ⚠️ Baseline records NO host. If it was measured on different "
+                     f"hardware, `ontologies lost` is not a valid comparison — "
+                     f"re-baseline on this host (`{ch['node']}`, {ch['cpu_count']} cores).\n")
+        elif (bh.get("node"), bh.get("machine")) != (ch["node"], ch["machine"]):
+            L.append(f"> ⚠️ CROSS-HOST COMPARISON: baseline `{bh.get('node')}` "
+                     f"({bh.get('machine')}, {bh.get('cpu_count')} cores) vs this run "
+                     f"`{ch['node']}` ({ch['machine']}, {ch['cpu_count']} cores). "
+                     f"`ontologies lost` is cap-sensitive and NOT comparable across hosts; "
+                     f"re-baseline before believing a FAIL.\n")
         L.append(f"- consistency-verdict flips: **{len(flips)}** (must be 0)")
         for f in flips[:10]:
             L.append(f"  - `{f['ont']}`: consistent {f['was']} → {f['now']}")
