@@ -202,6 +202,35 @@ the honest extension — makes the analyser find nothing: 322 real oracle files 
 anywhere. Check `oracle_source` before trusting a net: a healthy union run reads
 `both / konclude / hermit`, not `konclude` for everything.
 
+### 4d. Kobayashi-MaRust (KM) — a third voice, NOT an oracle
+
+KM ships as Linux ELF (`bin/km-v0232-44d86fa/km`), so it needs a Linux box; point
+`KM_BIN_DIR` at the directory containing `km`. Invocation is
+`km classify --route production_all` — the route is a CLI flag, and `production_all`
+is KM's winning bundle, not its default.
+
+**KM IS NOT AN ORACLE.** It is measured-unsound on ~1795 ORE ontologies, and it
+misses: on `ore_ont_6951` it reports `unsat=0`, siding with rustdl against Konclude
+AND HermiT, which both say 2. Never let it into a union oracle.
+
+**What it IS good for: a second peer where HermiT dies.** HermiT returned
+`NO_OUTPUT` on `ore_ont_16321` / `ore_ont_4198`, so the union oracle silently
+degraded to Konclude-only for 82 of 89 corpus-wide missed-unsat classes. KM
+supplied the missing independent voice and confirmed both ontologies are
+inconsistent — turning a single-peer claim into a corroborated one.
+
+Two corrections to the older notes, measured 2026-08-30 on a 17 GB Linux host:
+* **KM classifies `pizza` fine here** (479 subsumptions, 2 unsat, rc=0). The
+  "cannot even classify pizza" note describes the ORIGINAL host, not a property of
+  KM.
+* The 20 GB `ulimit -v` cap is still mandatory, and with 17 GB of RAM run **at most
+  3 KM processes in parallel**, not 6.
+
+Coverage on the 424-ontology release population, 60 s cap: rustdl v0.4.24
+**415 classified / 9 DNF**; KM v0.2.32 **361 / 60 / 3 err_reject**. 356 both;
+rustdl completes 59 KM cannot; KM completes 5 rustdl cannot, and those 5 are
+rustdl's known tail (`11085`, `1508`, `5368`, `7204`, `7828`).
+
 ## 5. The two-arm method
 
 ```sh

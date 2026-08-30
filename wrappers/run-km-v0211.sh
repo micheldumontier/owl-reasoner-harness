@@ -15,7 +15,9 @@
 #
 # NOTE: KM emits Tseitin definers (Q_1, Q_10, ...) in `subsumptions`; filter them
 # before any closure comparison. This run judges OUTCOME only.
-B=/data/dumontier/owl-reasoner-harness/bin/km-v0211-4eb5832
+# Binary dir is env-overridable so the harness runs off-cluster; cluster path
+# remains the default. Point KM_BIN_DIR at the directory CONTAINING `km`.
+B=${KM_BIN_DIR:-/data/dumontier/owl-reasoner-harness/bin}/km-v0211-4eb5832
 # Address-space cap; skipped where the platform has no RLIMIT_AS (Darwin). An
 # unguarded failure here exits the wrapper before the reasoner runs — see
 # run-rustdl-json.sh for the incident that caused.
