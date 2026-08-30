@@ -11,8 +11,12 @@
 # HermiT-vs-Konclude from FP=482 to FP=0.
 #
 # Usage: scripts/cross-check.sh [OUTDIR]   (default: a fresh mktemp dir)
-# HermiT needs docker; KM is capped at 20 GB by its wrapper and CANNOT do pizza
-# (237 GB / OOM, see REASONERS.md), so KM is run only on the small EL fixtures.
+# HermiT needs docker. KM must stay capped at 20 GB by its wrapper (uncapped it hit
+# 237 GB / OOM -- see REASONERS.md), and is run here only on the small EL fixtures.
+# NOTE: "KM cannot do pizza" was HOST-SPECIFIC. Measured 2026-08-30 on an idle 17 GB
+# Linux box, KM classifies pizza under the same cap (479 subsumptions, rc=0) -- but
+# with MISSED=24 against the Konclude==HermiT oracle, so it is excluded here for
+# INCOMPLETENESS, not for capacity.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 N="python3 scripts/normalise.py"

@@ -32,8 +32,21 @@ An unadjusted wall comparison is meaningless at small scale.
 ~100-class ontology — KM reached **237 GB RSS** and was **OOM-killed after 898 s**, degrading
 every other measurement running on the host at the time. Under the upstream `AGENTS.md`
 config (240 s / 20 GB) it aborts cleanly at 52 s with `memory allocation of 584 bytes failed`.
-So on this host KM **cannot classify pizza**, while it handles small EL fine (bibtex, 0.02 s).
 Never run KM in a sweep without the cap.
+
+> **"KM cannot classify pizza" is HOST-SPECIFIC, not a property of KM (measured
+> 2026-08-30, idle 17 GB Linux box).** Under the same 20 GB `ulimit -v`, KM classifies
+> `pizza.ofn` fine: **479 subsumptions, rc=0**, in all four combinations of
+> {v0.2.11, v0.2.32} x {`--route production_all`, default} — so it is neither a version
+> nor a route effect. The uncapped 237 GB / OOM result above was NOT retested and stands;
+> the cap remains mandatory.
+>
+> **But completing is not the same as being right, and the failure mode inverted.** On
+> this host KM returns an *incomplete* answer rather than aborting: against the pizza
+> oracle (Konclude == HermiT, 503) KM scores **479, FP=0, MISSED=24** — it drops all 20
+> `X ⊑ InterestingPizza` rows. rustdl v0.4.24 scores 499, FP=0, MISSED=4 on the same
+> oracle. A silent 24-entailment shortfall is arguably worse to build on than a visible
+> abort.
 
 **KM's output needs filtering before closure comparison.** It emits Tseitin definers in
 `subsumptions`, e.g. `{"subsumptions":{"Article":["Entry","Q_1","Q_10",…]}}`. The `Q_*` entries

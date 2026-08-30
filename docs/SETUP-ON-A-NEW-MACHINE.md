@@ -220,9 +220,13 @@ supplied the missing independent voice and confirmed both ontologies are
 inconsistent — turning a single-peer claim into a corroborated one.
 
 Two corrections to the older notes, measured 2026-08-30 on a 17 GB Linux host:
-* **KM classifies `pizza` fine here** (479 subsumptions, 2 unsat, rc=0). The
-  "cannot even classify pizza" note describes the ORIGINAL host, not a property of
-  KM.
+* **KM classifies `pizza` fine here** (479 subsumptions, 2 unsat, rc=0) — in all
+  four combinations of {v0.2.11, v0.2.32} x {`--route production_all`, default}, so
+  it is neither a version nor a route effect. The "cannot even classify pizza" note
+  describes the ORIGINAL host. **It completes but is incomplete**: 479 vs the
+  Konclude==HermiT oracle's 503, **FP=0, MISSED=24** (it drops all 20
+  `X ⊑ InterestingPizza` rows), where rustdl v0.4.24 scores 499 / FP=0 / MISSED=4.
+  The uncapped 237 GB / OOM result was not retested and stands.
 * The 20 GB `ulimit -v` cap is still mandatory, and with 17 GB of RAM run **at most
   3 KM processes in parallel**, not 6.
 

@@ -120,8 +120,13 @@ peer)
     # paths remain the defaults. The wrapper, not this script, resolves the binary.
     konclude) wrapper=${KONCLUDE_WRAPPER:-/data/dumontier/reasoners/run-konclude.sh} ;;
     hermit)   wrapper=${HERMIT_WRAPPER:-/data/dumontier/reasoners/run-hermit.sh} ;;
-    # KM is deliberately NOT an oracle leg: under its MANDATORY 20 GB cap it cannot even
-    # classify pizza on this host, and it is measured-unsound on ~1795 ORE ontologies.
+    # KM is deliberately NOT an oracle leg: it is measured-unsound on ~1795 ORE
+    # ontologies, and it MISSES -- on ore_ont_6951 it reports unsat=0, siding with
+    # rustdl against Konclude AND HermiT, which both say 2.
+    # (The old rationale here also said KM "cannot even classify pizza on this host".
+    # That was host-specific: on an idle 17 GB Linux box it classifies pizza fine under
+    # the same 20 GB cap, but with MISSED=24 vs the oracle. Capacity was never the
+    # reason to exclude it; incompleteness is.)
     *) die "peer must be konclude or hermit (KM is not an oracle: measured unsound)" ;;
   esac
   [ -x "$wrapper" ] || die "peer wrapper not executable: $wrapper (set ${peer^^}_WRAPPER)"
