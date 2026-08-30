@@ -43,10 +43,18 @@ Never run KM in a sweep without the cap.
 >
 > **But completing is not the same as being right, and the failure mode inverted.** On
 > this host KM returns an *incomplete* answer rather than aborting: against the pizza
-> oracle (Konclude == HermiT, 503) KM scores **479, FP=0, MISSED=24** — it drops all 20
-> `X ⊑ InterestingPizza` rows. rustdl v0.4.24 scores 499, FP=0, MISSED=4 on the same
-> oracle. A silent 24-entailment shortfall is arguably worse to build on than a visible
-> abort.
+> oracle (Konclude == HermiT, **499**) KM scores **479, FP=0, MISSED=20** — precisely the
+> 20 `X ⊑ InterestingPizza` rows, which it reports none of. rustdl v0.4.24 scores
+> **499, FP=0, MISSED=0** on the same oracle. A silent 20-entailment shortfall is
+> arguably worse to build on than a visible abort.
+>
+> **Score with unsatisfiable classes EXCLUDED on both sides, as `aligned_closures` does.**
+> A first pass of this comparison did not, and read the oracle as 503 with rustdl at
+> MISSED=4. All four of those "misses" were `CheeseyVegetableTopping`/`IceCream` rows —
+> the two classes both reasoners already report as unsatisfiable, and an unsat class
+> subsumes everything, so the rows are trivially true and say nothing about either
+> engine. Calibrate against the committed net's `pizza 499 = 499 FP=0 MISSED=0` before
+> believing any number here.
 
 **KM's output needs filtering before closure comparison.** It emits Tseitin definers in
 `subsumptions`, e.g. `{"subsumptions":{"Article":["Entry","Q_1","Q_10",…]}}`. The `Q_*` entries

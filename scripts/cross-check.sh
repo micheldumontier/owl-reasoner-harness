@@ -15,8 +15,8 @@
 # 237 GB / OOM -- see REASONERS.md), and is run here only on the small EL fixtures.
 # NOTE: "KM cannot do pizza" was HOST-SPECIFIC. Measured 2026-08-30 on an idle 17 GB
 # Linux box, KM classifies pizza under the same cap (479 subsumptions, rc=0) -- but
-# with MISSED=24 against the Konclude==HermiT oracle, so it is excluded here for
-# INCOMPLETENESS, not for capacity.
+# with MISSED=20 against the Konclude==HermiT oracle (the 20 X ⊑ InterestingPizza
+# rows), so it is excluded here for INCOMPLETENESS, not for capacity.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 N="python3 scripts/normalise.py"

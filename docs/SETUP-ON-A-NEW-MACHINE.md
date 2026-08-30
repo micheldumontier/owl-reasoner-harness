@@ -224,8 +224,11 @@ Two corrections to the older notes, measured 2026-08-30 on a 17 GB Linux host:
   four combinations of {v0.2.11, v0.2.32} x {`--route production_all`, default}, so
   it is neither a version nor a route effect. The "cannot even classify pizza" note
   describes the ORIGINAL host. **It completes but is incomplete**: 479 vs the
-  Konclude==HermiT oracle's 503, **FP=0, MISSED=24** (it drops all 20
-  `X ⊑ InterestingPizza` rows), where rustdl v0.4.24 scores 499 / FP=0 / MISSED=4.
+  Konclude==HermiT oracle's **499**, **FP=0, MISSED=20** — precisely the 20
+  `X ⊑ InterestingPizza` rows — where rustdl scores **499 / FP=0 / MISSED=0**.
+  Score with unsatisfiable classes excluded on both sides (`aligned_closures` does);
+  omitting that inflated this to 503/MISSED=4 on a first pass, all four of the phantom
+  "misses" being rows about the two already-reported unsat classes.
   The uncapped 237 GB / OOM result was not retested and stands.
 * The 20 GB `ulimit -v` cap is still mandatory, and with 17 GB of RAM run **at most
   3 KM processes in parallel**, not 6.

@@ -125,7 +125,7 @@ peer)
     # rustdl against Konclude AND HermiT, which both say 2.
     # (The old rationale here also said KM "cannot even classify pizza on this host".
     # That was host-specific: on an idle 17 GB Linux box it classifies pizza fine under
-    # the same 20 GB cap, but with MISSED=24 vs the oracle. Capacity was never the
+    # the same 20 GB cap, but with MISSED=20 vs the oracle. Capacity was never the
     # reason to exclude it; incompleteness is.)
     *) die "peer must be konclude or hermit (KM is not an oracle: measured unsound)" ;;
   esac
