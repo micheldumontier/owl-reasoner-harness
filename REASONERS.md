@@ -56,6 +56,39 @@ Never run KM in a sweep without the cap.
 > engine. Calibrate against the committed net's `pizza 499 = 499 FP=0 MISSED=0` before
 > believing any number here.
 
+> **KM v1.3.0 MEASURED OFF-CLUSTER (2026-09-06), and it is a much newer baseline than the
+> pinned v0.2.32 — plus two findings about using KM as an ORACLE on datatypes.**
+> Built from `f4738bcd` (`engine/`, `cargo build --release`, 2m31s, exit 0) on macOS/arm64.
+>
+> **1. KM is the WRONG tie-breaker for a DATATYPE question, on principle.** Its `konclude_ht`
+> module is, in its own words, *"a direct, exact Rust port of Konclude's hypertableau reasoning
+> algorithm … annotated so the two trees stay diffable function-by-function"*, and
+> `SemanticFragment::NativeBridgeAbox` routes the datatype fragment through it. Agreement with
+> Konclude would be **Konclude agreeing with itself**. A "third reasoner" that PORTS one
+> disputant is not a third opinion — use JFact (FaCT++ lineage, bundled with `robot`) instead.
+>
+> **2. But that caution did NOT bind in practice, which is worth recording honestly.** On
+> `≥3 p.DataOneOf("1","2")` KM answers **unsatisfiable** — siding with `HermiT` and rustdl
+> AGAINST Konclude and JFact, and matching what the OWL 2 spec requires. So the port did not
+> determine the answer. Route-independent (`--route production_all` and default agree).
+>
+> **3. The calibration control is what makes KM's answers readable.** On
+> `∀p.(≥1 ⊓ ≤10)` with `∃p.{50}` — where rustdl, `HermiT`, Konclude AND JFact all say
+> unsatisfiable — **KM reports `unsatisfiable: []`**, i.e. it misses it. Consistent with the
+> documented `pizza 479 / MISSED=20` incompleteness. **So KM's `unsat` is informative (it is
+> FP=0) and KM's `satisfiable` is NOT.** Read it one-directionally.
+>
+> | probe | rustdl | HermiT | Konclude | JFact | KM v1.3.0 | OWL 2 spec |
+> |---|---|---|---|---|---|---|
+> | `≥3 p.DataOneOf("1","2")` | UNSAT | UNSAT | sat | sat | **UNSAT** | **UNSAT** |
+> | `≥3 p.({1} ⊔ {2})` | drops (visibly) | UNSAT | sat | sat | sat | **UNSAT** |
+> | `∀p.(≥1 ⊓ ≤10)` + `∃p.{50}` | UNSAT | UNSAT | UNSAT | UNSAT | **sat (misses)** | UNSAT |
+>
+> The spec rows are not opinion: `DataMinCardinality( n DPE DR ) = { x | #{ y | (x,y) ∈ (DPE)^DP
+> and y ∈ (DR)^DT } ≥ n }` counts DISTINCT values, and `DataOneOf`/`⊔` denote a 2-element set,
+> so `≥3` is unmeetable. **Konclude under-reports both cardinality rows (its ninth recorded
+> under-report); JFact under-reports both (its first recorded).**
+
 **KM's output needs filtering before closure comparison.** It emits Tseitin definers in
 `subsumptions`, e.g. `{"subsumptions":{"Article":["Entry","Q_1","Q_10",…]}}`. The `Q_*` entries
 are internal and must be dropped, the way rustdl filters synthetic `DKey` classes via
