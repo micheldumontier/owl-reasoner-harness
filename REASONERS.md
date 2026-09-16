@@ -323,3 +323,71 @@ the emptiness when the simpler reading — they all agree because 0 is correct �
 throughout. Unanimity among independent configurations is evidence *for* an answer.
 
 **Nothing has been reported upstream, and nothing should be.** There is no KM defect here.
+
+---
+
+# ELK and FaCT++/JFact, via an OWLAPI driver rather than `robot reason` (2026-09-17)
+
+`java/ReasonerCli.java` + `wrappers/run-elk.sh`, `wrappers/run-jfact.sh`.
+
+## `robot reason` refuses any ontology with an unsatisfiable class
+
+It exits 1 and writes **no output file at all**. The check is ROBOT's own
+(`ReasonerHelper`), so it is reasoner&#8209;independent: on `pizza.ofn` HermiT, ELK and
+JFact each exit 1 with no output, against a clean control (`ro.ofn`, no unsatisfiable
+classes) where JFact exits 0 and writes 99 axioms.
+
+**At least 130 of 1,783 ORE ontologies (7.3%)** carry an unsatisfiable class or are
+inconsistent and would be silently dropped. That is a FLOOR — it is counted from KM's
+own `unsatisfiable` reports, and KM's unsat lists are sound but incomplete.
+
+**`run-hermit.sh` was never affected**, and that is worth stating because the obvious
+reading is that it was: it calls `org.semanticweb.HermiT.cli.CommandLine -c`, HermiT's
+own CLI, which classifies pizza fine (rc=0, 167 axioms). The problem belongs to
+`robot reason`, not to the reasoners. ELK and JFact have no equivalent CLI to call —
+`robot.jar` carries `org/semanticweb/elk/owlapi/` but no `elk/cli`, and JFact is an
+OWLAPI library (`JFactFactory`, 2016) that never had one — which is the whole reason
+this driver exists.
+
+## The driver reproduces the trusted path exactly
+
+Output is deliberately byte&#8209;shaped like HermiT's `-c` taxonomy, so
+`normalise.py --format hermit` parses every reasoner driven here with **no new
+parser**. Do not change that format without changing `parse_hermit` in the same commit.
+
+Acceptance test — the driver run with `hermit` against HermiT's own CLI, compared
+after normalisation (which excludes unsatisfiable classes on both sides):
+
+| fixture | closure | oracle | FP | MISSED |
+|---|---:|---:|---:|---:|
+| pizza | 499 | 499 | 0 | 0 |
+| ro | 158 | 158 | 0 | 0 |
+| sulo | 51 | 51 | 0 | 0 |
+
+Those are the committed reference values. **JFact matches all three** (499 / 158 / 51,
+FP=0, MISSED=0). **ELK is exact on ro and sulo and incomplete on pizza** — 417 vs 499,
+**FP=0, MISSED=82** — which is correct: pizza is not in the EL profile. That asymmetry
+is the argument for reporting ELK against the EL subset, or at minimum reporting
+declines separately, rather than putting it in one table beside the DL reasoners.
+
+## Two traps the raw output walks into
+
+**Equivalence representative.** OWLAPI's `getRepresentativeElement()` and HermiT's CLI
+pick *different* members of an equivalence class as spokesperson
+(`SpicyPizzaEquivalent` vs `SpicyPizza`). A first version of the driver also emitted
+one row per *member* rather than per class, inflating pizza by 16 rows and printing
+each equivalence group twice. Those were never extra entailments — normalised, the
+closures are identical — but a raw text diff reports 17 differences and reads as a
+disagreement between reasoners.
+
+**`owl:Thing` parents.** The driver suppresses them, matching HermiT. Counting them is
+a recorded trap here: 73% of an apparent ~1,795&#8209;row gap against another reasoner was
+this convention alone.
+
+Both are instances of the same rule: **compare normalised closures, never raw rows.**
+
+## Exit codes
+
+`0` answered · `3` declined (the reasoner refused an unsupported construct — an honest
+refusal, distinct from a failure) · `2` usage/build · `1` failed. Smoke&#8209;tested 3 cases
+per wrapper: pizza (has unsatisfiable classes) 0, ro (clean) 0, missing file 1.
