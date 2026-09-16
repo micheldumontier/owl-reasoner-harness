@@ -12,6 +12,56 @@ use std::time::Instant;
 /// `timeout(1)`'s exit code when it kills the child.
 const CAP_EXIT_CODE: i32 = 124;
 
+/// How this host can measure a child: GNU `time -f` gives peak RSS, BSD `time` does
+/// not accept `-f` at all.
+///
+/// THIS EXISTS BECAUSE THE HARNESS SILENTLY FAILED EVERY CASE ON macOS. The runner
+/// hard-coded `/usr/bin/time -f "%e %M"`, which BSD `time` rejects outright, so the
+/// spawn died before the reasoner ran and all 24 cases of a pilot came back
+/// `err_reject` in 0.1s each. That reads as "every reasoner rejected every ontology",
+/// which is exactly the shape a previous release report mistook for a real result
+/// before relabelling the wreckage "CAP-BORDERLINE, gate PASSES".
+///
+/// Degrading RSS to `null` is honest and still measurable; failing every case is not.
+#[derive(Clone, Copy, PartialEq)]
+enum Timer {
+    /// GNU `time -f "%e %M"` wrapping `timeout` — wall AND peak RSS.
+    GnuTime,
+    /// `timeout` only — wall from `Instant`, `peak_rss_kb: null`.
+    TimeoutOnly,
+    /// Neither: the cap cannot be enforced by a helper, so it is NOT enforced.
+    /// Recorded in the header so a run without a cap can never be read as one with.
+    None_,
+}
+
+/// Probe once per run, never per ontology.
+fn detect_timer() -> (Timer, String) {
+    let gnu = Command::new("/usr/bin/time")
+        .args(["-f", "%e %M", "-o", "/dev/null", "true"])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false);
+    let timeout_bin = ["timeout", "gtimeout"]
+        .iter()
+        .find(|b| {
+            Command::new(b)
+                .args(["1", "true"])
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .status()
+                .map(|s| s.success())
+                .unwrap_or(false)
+        })
+        .map(|b| (*b).to_string());
+    match (gnu, timeout_bin) {
+        (true, Some(t)) => (Timer::GnuTime, t),
+        (false, Some(t)) => (Timer::TimeoutOnly, t),
+        (_, None) => (Timer::None_, String::new()),
+    }
+}
+
 #[derive(Args)]
 pub struct RunArgs {
     /// Directory of ontology files.
@@ -183,6 +233,22 @@ pub fn main(a: RunArgs) -> Result<(), String> {
     let f = fs::File::create(&a.out).map_err(|e| format!("creating {}: {e}", a.out.display()))?;
     let mut w = BufWriter::new(f);
 
+    let (timer, timeout_bin) = detect_timer();
+    match timer {
+        Timer::GnuTime => {}
+        Timer::TimeoutOnly => eprintln!(
+            "harness: GNU `time -f` unavailable on this host; wall is measured \
+             directly and peak_rss_kb will be null for every case (cap still \
+             enforced by `{timeout_bin}`)."
+        ),
+        Timer::None_ => eprintln!(
+            "harness: NEITHER GNU `time -f` NOR `timeout` is available; the \
+             --cap-secs {} IS NOT ENFORCED and peak_rss_kb will be null. Install \
+             coreutils before running anything you intend to publish.",
+            a.cap_secs
+        ),
+    }
+
     let header = Header {
         kind: "header".into(),
         reasoner: a.reasoner.display().to_string(),
@@ -286,17 +352,31 @@ pub fn main(a: RunArgs) -> Result<(), String> {
             .map(|t| t.replace("{}", &path.display().to_string()))
             .collect();
 
-        let mut cmd = Command::new("/usr/bin/time");
-        cmd.arg("-f")
-            .arg("%e %M")
-            .arg("-o")
-            .arg(&tf)
-            .arg("timeout")
-            .arg(a.cap_secs.to_string())
-            .arg(&a.reasoner)
-            .args(&argv)
-            .stdout(Stdio::piped())
-            .stderr(Stdio::null());
+        let mut cmd = match timer {
+            Timer::GnuTime => {
+                let mut c = Command::new("/usr/bin/time");
+                c.arg("-f")
+                    .arg("%e %M")
+                    .arg("-o")
+                    .arg(&tf)
+                    .arg(&timeout_bin)
+                    .arg(a.cap_secs.to_string())
+                    .arg(&a.reasoner)
+                    .args(&argv);
+                c
+            }
+            Timer::TimeoutOnly => {
+                let mut c = Command::new(&timeout_bin);
+                c.arg(a.cap_secs.to_string()).arg(&a.reasoner).args(&argv);
+                c
+            }
+            Timer::None_ => {
+                let mut c = Command::new(&a.reasoner);
+                c.args(&argv);
+                c
+            }
+        };
+        cmd.stdout(Stdio::piped()).stderr(Stdio::null());
         if let Some(t) = a.threads {
             cmd.env("RAYON_NUM_THREADS", t.to_string());
         }
