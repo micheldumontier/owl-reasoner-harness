@@ -227,3 +227,99 @@ The second break misreported **110 of 192** HermiT runs as front-end failures be
 predicate knew only OWL/XML and tab-separated text while HermiT writes functional syntax.
 Both bugs yielded a plausible number rather than an error. Validate the predicate per format,
 positive and negative, and sabotage the guard before believing it.
+
+---
+
+# KM v1.3.0 over the full ORE set (2026-09-16)
+
+Binary `bin/km-v130-f4738bc` (v1.3.0 tag, `f4738bc`), corpus
+`/data/dumontier/ore-run/pool_sample/files` (1,920), run on **g1** (32 cores, 251 GB), 60 s
+cap, `--route auto`, `ulimit -v 20GB`. Inputs verified **byte-identical** to the
+`ontology_sha256` column of KM's own `reproduced-route-ledger.tsv`, so any difference is not
+an input difference.
+
+| outcome | n |
+|---|---:|
+| ok | **1,783** |
+| dnf (60 s cap) | **118** |
+| err_reject | **19** |
+
+**This tally is not comparable to KM's published 591/592.** That figure is over KM's own
+592-ontology gold set under a **240 s / 20 GiB / 16-cpu** contract; this is 1,920 ontologies
+at **60 s** on a shared host. A DNF here is mostly a statement about the cap. What *is*
+comparable across contracts are the 19 `err_reject`, which are cap-independent.
+
+## The `| tee` exit-status defect — 22 failures were reported as successes
+
+`run-km-v130.sh` ran `sh -c "km classify … | tee OUT"`. A pipeline's status is the **last**
+command's, so the wrapper returned `tee`'s 0 whenever KM died. The harness derives `Outcome`
+from the child's exit status (correctly — `model.rs`: *"never from parsing its output"*), so
+**22 failures were recorded as `ok`**: the pre-fix sweep read 1,805 ok / 115 dnf, and the
+recheck of those 22 returned **19 `err_reject` + 3 `dnf`**. The two wrapper hashes differ
+(`abbf4d27` masking, `51f2050c` fixed), so the pin is discriminating.
+
+**All four KM wrappers carried it** — `run-km.sh`, `run-km-latest.sh`, `run-km-v0211.sh`,
+`run-km-v130.sh` — so every historical KM sweep in this repo is suspect by the same amount.
+Now fixed in all four. **The fix must use `bash -c`, not `sh -c`**: `sh` is dash on Ubuntu and
+rejects `set -o pipefail`, which fails the wrapper with rc=2 on *every* case — a second way to
+get a uniformly wrong sweep. Verified both directions: pass → 0, failure → 1, wrapper
+agreeing with the bare binary 3/3.
+
+**Generalise this:** any wrapper ending in a pipe reports the wrong status. Check every
+wrapper in `wrappers/` that contains `|`, not just KM's.
+
+## The 19 `err_reject` split into two very different things
+
+| cause | rc | n |
+|---|---:|---:|
+| **honest refusal** — `unsupported: …`, KM declines the input | 3 | **10** |
+| **memory failure** under the 20 GB cap — `memory allocation of N bytes failed` | 1 | **9** |
+
+The 10 refusals are 7 × `DL-safe rules: parsed k and certified 0 of n` (SWRL) and 3 ×
+`out of fragment: named role expected, got ObjectInverseOf(…)`. **These are sound behaviour**
+— KM says what it cannot do and exits non-zero, the analogue of rustdl's `dropped` block, and
+they should not be scored as failures in the same bucket as an OOM. Two of the nine memory
+failures (`ore_ont_8475`, `ore_ont_9890`) report no message at all, only
+`worker engine exited -1`. `ore_ont_10908` — a curated rustdl fixture — is a memory failure
+at 58 MB, i.e. address space was already exhausted when it asked.
+
+## The memory cap is part of the ANSWER, not just the cost
+
+On `pizza.ofn`, three interleaved repeats per arm, deterministic 3/3 each way:
+
+| `ulimit -v` | KM subsumptions | vs oracle (Konclude == HermiT == 499) |
+|---|---:|---|
+| 20 GB | **479** | MISSED 20 |
+| 48 GB | **474** | MISSED 25 |
+
+**More memory produced a smaller closure.** Whatever the mechanism, the consequence for
+methodology is the point: two labs running the same KM binary on the same file under
+different memory limits get **different closures**, silently, both with rc=0. A resource
+contract therefore has to be stated as part of a correctness claim, not only alongside a
+timing claim — and it must be *identical across arms*, not merely "generous enough".
+
+## RETRACTED: the "79 silent-empty results" finding was my own measurement error
+
+I reported that 79 ontologies returned `consistent: true, subsumptions: [], dropped: 0`
+while *asserting* subsumptions, 52 of them inside KM's own gold set — i.e. a silent
+wrong-answer defect. **That is wrong. Withdrawn.**
+
+The selector was `grep -c '^SubClassOf('`, which counts axioms with **complex** superclasses
+(`ObjectMinCardinality`, `DataExactCardinality`, …). KM reports only **named-to-named** pairs,
+so those axioms can never appear in its output. On the three cases I probed by hand, the
+named-to-named count is **0 of 262,266**, **0 of 442,498** and **0 of 7**.
+
+Adjudicated properly: all **125** rc=0/consistent/empty results, re-run through rustdl v0.4.28
+under the same 60 s cap — **123 also empty, 0 disagreements, 2 no-result**. KM was right on
+every case that could be checked.
+
+Three things went wrong and all three are in this repo's own discipline notes:
+**selection on a proxy rather than the binding predicate** (the predicate is "has a
+named-to-named pair", not "has a SubClassOf axiom"); **no reference reasoner** was run before
+the finding was formed, so KM was being adjudicated against my reading of the input rather
+than against another engine; and the earlier route sweep
+(`auto`/`production_all`/`elc`/`cb_plain16` all returning 0) was read as *failing to explain*
+the emptiness when the simpler reading — they all agree because 0 is correct — was available
+throughout. Unanimity among independent configurations is evidence *for* an answer.
+
+**Nothing has been reported upstream, and nothing should be.** There is no KM defect here.

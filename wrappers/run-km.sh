@@ -14,7 +14,7 @@ ulimit -v $((20*1024*1024)) 2>/dev/null || true
 # content (see run-konclude.sh). stdout is preserved either way.
 if [ -n "${HARNESS_OUT_DIR:-}" ]; then
   mkdir -p "$HARNESS_OUT_DIR"
-  exec sh -c "$E/ofn \"\$1\" | $E/kobayashi-marust | tee \"\$2\"" _ "$1" \
+  exec bash -c "set -o pipefail; $E/ofn \"\$1\" | $E/kobayashi-marust | tee \"\$2\"" _ "$1" \
        "$HARNESS_OUT_DIR/$(basename "${1%.*}").json"
 fi
-exec sh -c "$E/ofn \"\$1\" | $E/kobayashi-marust" _ "$1"
+exec bash -c "set -o pipefail; $E/ofn \"\$1\" | $E/kobayashi-marust" _ "$1"

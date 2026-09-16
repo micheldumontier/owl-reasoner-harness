@@ -24,7 +24,7 @@ B=${KM_BIN_DIR:-/data/dumontier/owl-reasoner-harness/bin}/km-v0211-4eb5832
 ulimit -v $((20*1024*1024)) 2>/dev/null || true
 if [ -n "${HARNESS_OUT_DIR:-}" ]; then
   mkdir -p "$HARNESS_OUT_DIR"
-  exec sh -c "\"\$0\"/km classify --route production_all \"\$1\" | tee \"\$2\"" \
+  exec bash -c "set -o pipefail; \"\$0\"/km classify --route production_all \"\$1\" | tee \"\$2\"" \
        "$B" "$1" "$HARNESS_OUT_DIR/$(basename "${1%.*}").json"
 fi
 exec "$B/km" classify --route production_all "$1"
