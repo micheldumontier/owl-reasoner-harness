@@ -321,6 +321,20 @@ def parse_rustdl(path: str) -> Normalised:
     return n
 
 
+def prefix_map(ontology: str) -> dict[str, str]:
+    """prefix -> namespace for every `Prefix(p:=<ns>)` in an .ofn source.
+
+    The default prefix is the empty key, so `:Foo` resolves like any other.
+    Shared by `declared_classes` and KM's prefixed-name resolver so the two cannot
+    drift; KM >= v1.3.0 reports `pizza:American`, which needs this to become an IRI.
+    """
+    txt = open(ontology, encoding="utf-8", errors="replace").read()
+    out: dict[str, str] = {}
+    for m in re.finditer(r"Prefix\(\s*([A-Za-z0-9_.-]*):=<([^>]*)>\s*\)", txt):
+        out[m.group(1)] = m.group(2)
+    return out
+
+
 def declared_classes(ontology: str) -> dict[str, str]:
     """local name -> full IRI for every class DECLARED in an .ofn source ontology.
 
@@ -328,9 +342,7 @@ def declared_classes(ontology: str) -> dict[str, str]:
     output, so no reasoner's internal synthetics can enter it.
     """
     txt = open(ontology, encoding="utf-8", errors="replace").read()
-    prefixes: dict[str, str] = {}
-    for m in re.finditer(r"Prefix\(\s*([A-Za-z0-9_.-]*):=<([^>]*)>\s*\)", txt):
-        prefixes[m.group(1)] = m.group(2)
+    prefixes = prefix_map(ontology)
 
     out: dict[str, str] = {}
     collisions: set[str] = set()
@@ -386,6 +398,34 @@ def parse_km(path: str, ontology: str | None) -> Normalised:
             "classes actually declared in the source ontology (see R1)."
         )
     name_to_iri = declared_classes(ontology)
+    _prefixes = prefix_map(ontology)
+    _declared_iris = set(name_to_iri.values())
+
+    def expand_prefixed(tok: str) -> str | None:
+        """`pizza:American` -> full IRI, but ONLY if the result is a declared class.
+
+        KM >= v1.3.0 emits ABBREVIATED names -- a third output shape after the
+        v0.2.3 local-name dict and the v0.2.4 full-IRI pair list. Unhandled, every
+        entry failed `lookup`, was counted as an internal symbol and dropped, and KM
+        normalised to an EMPTY closure: measured on pizza, 0 rows where KM really
+        reports 479. In a comparison that reads as "KM missed everything" rather
+        than as a parser gap, which is the exact failure the format-dispatch comment
+        above was written to prevent.
+
+        Resolution goes through the prefix map and is then CHECKED against the
+        declared-class whitelist, rather than falling back to matching on local name
+        -- two namespaces in one ontology may share a local name, and a local-name
+        fallback would silently pick one.
+        """
+        if "://" in tok or tok.startswith("<") or ":" not in tok:
+            return None
+        pfx, local = tok.split(":", 1)
+        base = _prefixes.get(pfx)
+        if base is None:
+            return None
+        iri = base + local
+        return iri if iri in _declared_iris else None
+
 
     def lookup(name: str) -> str | None:
         """KM output name -> source IRI, or None if it is an internal symbol.
@@ -424,8 +464,8 @@ def parse_km(path: str, ontology: str | None) -> Normalised:
             elif isinstance(entry, dict) and "sub" in entry and "sup" in entry:
                 pairs.append((str(entry["sub"]), str(entry["sup"])))
         for sub, sup in pairs:
-            s_iri = lookup(sub) or (sub if "://" in sub else None)
-            t_iri = lookup(sup) or (sup if "://" in sup else None)
+            s_iri = lookup(sub) or expand_prefixed(sub) or (sub if "://" in sub else None)
+            t_iri = lookup(sup) or expand_prefixed(sup) or (sup if "://" in sup else None)
             if s_iri is None:
                 dropped.add(sub)
                 continue
@@ -434,15 +474,24 @@ def parse_km(path: str, ontology: str | None) -> Normalised:
                 continue
             n.add_edge(s_iri, t_iri)
         if dropped:
-            n.notes.append(f"km dropped {len(dropped)} internal symbol(s)")
+            # NOT `n.notes.append` -- Normalised has no `notes` attribute and this
+            # raised AttributeError. The path was unreachable while KM's list format
+            # carried FULL IRIs (every symbol resolved, or fell through to the
+            # absolute-IRI fallback); v1.3.0's abbreviated names made it live. Same
+            # stderr note the dict branch emits, so the two cannot diverge.
+            print(
+                f"note: dropped {len(dropped)} KM names not declared in the source "
+                f"ontology (Tseitin definers etc., e.g. {sorted(dropped)[:5]})",
+                file=sys.stderr,
+            )
         return n
     for sub, sups in raw.items():
-        s_iri = lookup(sub)
+        s_iri = lookup(sub) or expand_prefixed(sub)
         if s_iri is None:
             dropped.add(sub)
             continue
         for sup in sups:
-            t_iri = lookup(sup)
+            t_iri = lookup(sup) or expand_prefixed(sup)
             if t_iri is None:
                 dropped.add(sup)
                 continue
@@ -645,6 +694,25 @@ def run_selftest() -> int:
           kmn.pairs(), {("http://e#Q_1", "http://e#Mid")})
     check("R1 Tseitin definer Q_0 dropped",
           any("Q_0" in x for pr in kmn.pairs() for x in pr), False)
+
+    # KM >= v1.3.0 emits ABBREVIATED names in the pair-list form (`pizza:American`),
+    # a third shape after the v0.2.3 local-name dict and the v0.2.4 full-IRI list.
+    # Unhandled it resolves to NOTHING and KM normalises to an empty closure, which
+    # reads as "KM missed everything" rather than as a parser gap: measured on pizza,
+    # 0 rows against the 479 KM really reports. Covers the default (empty) prefix too.
+    ofn2 = w("pfx.ofn", "Prefix(:=<http://e#>)\nPrefix(p:=<http://p#>)\n"
+                        "Ontology(<http://e>\nDeclaration(Class(:A))\n"
+                        "Declaration(Class(p:B))\n)\n")
+    km2 = w("pfx.json", json.dumps({"subsumptions": [[":A", "p:B"]]}))
+    check("KM v1.3.0 prefixed names resolve to declared IRIs",
+          parse_km(km2, ofn2).pairs(), {("http://e#A", "http://p#B")})
+
+    # A prefixed name whose expansion is NOT a declared class must still be dropped --
+    # the resolver is whitelist-checked, not a local-name fallback, because two
+    # namespaces in one ontology can share a local name.
+    km3 = w("pfx2.json", json.dumps({"subsumptions": [[":A", "p:Undeclared"]]}))
+    check("KM prefixed name outside the whitelist is dropped",
+          parse_km(km3, ofn2).pairs(), set())
 
     print("-" * 46)
     print(f"selftest: {'FAILED ' + str(len(fails)) if fails else 'all PASS'}")
