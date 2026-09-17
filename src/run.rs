@@ -27,6 +27,11 @@ const CAP_EXIT_CODE: i32 = 124;
 enum Timer {
     /// GNU `time -f "%e %M"` wrapping `timeout` — wall AND peak RSS.
     GnuTime,
+    /// BSD `time -l` (macOS) wrapping `timeout` — wall AND peak RSS, but the RSS is
+    /// reported in BYTES where GNU's `%M` is KILOBYTES. Converted at parse time so
+    /// `peak_rss_kb` means the same thing on both platforms; reading BSD's number as
+    /// KB overstates memory by 1024x, which on a 12 GB run looks like 12 TB.
+    BsdTime,
     /// `timeout` only — wall from `Instant`, `peak_rss_kb: null`.
     TimeoutOnly,
     /// Neither: the cap cannot be enforced by a helper, so it is NOT enforced.
@@ -38,6 +43,13 @@ enum Timer {
 fn detect_timer() -> (Timer, String) {
     let gnu = Command::new("/usr/bin/time")
         .args(["-f", "%e %M", "-o", "/dev/null", "true"])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false);
+    let bsd = Command::new("/usr/bin/time")
+        .args(["-l", "-o", "/dev/null", "true"])
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status()
@@ -55,10 +67,11 @@ fn detect_timer() -> (Timer, String) {
                 .unwrap_or(false)
         })
         .map(|b| (*b).to_string());
-    match (gnu, timeout_bin) {
-        (true, Some(t)) => (Timer::GnuTime, t),
-        (false, Some(t)) => (Timer::TimeoutOnly, t),
-        (_, None) => (Timer::None_, String::new()),
+    match (gnu, bsd, timeout_bin) {
+        (true, _, Some(t)) => (Timer::GnuTime, t),
+        (false, true, Some(t)) => (Timer::BsdTime, t),
+        (false, false, Some(t)) => (Timer::TimeoutOnly, t),
+        (_, _, None) => (Timer::None_, String::new()),
     }
 }
 
@@ -236,6 +249,9 @@ pub fn main(a: RunArgs) -> Result<(), String> {
     let (timer, timeout_bin) = detect_timer();
     match timer {
         Timer::GnuTime => {}
+        Timer::BsdTime => eprintln!(
+            "harness: using BSD `time -l` (peak RSS converted from bytes to KB)."
+        ),
         Timer::TimeoutOnly => eprintln!(
             "harness: GNU `time -f` unavailable on this host; wall is measured \
              directly and peak_rss_kb will be null for every case (cap still \
@@ -365,6 +381,17 @@ pub fn main(a: RunArgs) -> Result<(), String> {
                     .args(&argv);
                 c
             }
+            Timer::BsdTime => {
+                let mut c = Command::new("/usr/bin/time");
+                c.arg("-l")
+                    .arg("-o")
+                    .arg(&tf)
+                    .arg(&timeout_bin)
+                    .arg(a.cap_secs.to_string())
+                    .arg(&a.reasoner)
+                    .args(&argv);
+                c
+            }
             Timer::TimeoutOnly => {
                 let mut c = Command::new(&timeout_bin);
                 c.arg(a.cap_secs.to_string()).arg(&a.reasoner).args(&argv);
@@ -396,7 +423,11 @@ pub fn main(a: RunArgs) -> Result<(), String> {
             }
         };
 
-        let (wall_s, peak_rss_kb) = read_timing(&tf).unwrap_or((Some(fallback_wall), None));
+        let parsed = match timer {
+            Timer::BsdTime => read_timing_bsd(&tf),
+            _ => read_timing(&tf),
+        };
+        let (wall_s, peak_rss_kb) = parsed.unwrap_or((Some(fallback_wall), None));
         fs::remove_file(&tf).ok();
 
         let (out_sha256, out_lines) = if a.digest_output && !stdout.is_empty() {
@@ -465,4 +496,40 @@ fn emit<W: Write>(w: &mut W, c: Case) {
     }
     // Flush per record: a sweep killed mid-run must leave usable partial results.
     w.flush().ok();
+}
+
+/// Parse BSD `time -l` (macOS). Two lines matter:
+///
+/// ```text
+///         1.23 real         0.45 user         0.06 sys
+///            1294336  maximum resident set size
+/// ```
+///
+/// **The RSS is in BYTES**, unlike GNU `%M` which is kilobytes; it is converted here
+/// so `peak_rss_kb` carries one meaning across platforms. Fields are located by their
+/// labels rather than by position, because BSD `time` pads the columns and prepends
+/// nothing on a failing child — the opposite of GNU's "Command exited with non-zero
+/// status N" prefix that makes its LAST line the one to read.
+fn read_timing_bsd(path: &Path) -> Option<(Option<f64>, Option<u64>)> {
+    let txt = fs::read_to_string(path).ok()?;
+    let mut wall = None;
+    let mut rss_kb = None;
+    for line in txt.lines() {
+        if wall.is_none() {
+            if let Some(i) = line.find(" real") {
+                wall = line[..i].split_whitespace().last().and_then(|t| t.parse::<f64>().ok());
+            }
+        }
+        if line.contains("maximum resident set size") {
+            rss_kb = line
+                .split_whitespace()
+                .next()
+                .and_then(|t| t.parse::<u64>().ok())
+                .map(|bytes| bytes / 1024);
+        }
+    }
+    if wall.is_none() && rss_kb.is_none() {
+        return None;
+    }
+    Some((wall, rss_kb))
 }
