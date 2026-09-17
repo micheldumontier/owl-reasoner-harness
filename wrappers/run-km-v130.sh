@@ -19,7 +19,18 @@
 #    diff those two shapes directly.
 #  - v0.2.32 emitted Tseitin definers (Q_N) in `subsumptions`; v1.3.0 emits none on
 #    pizza. Filter defensively before any closure comparison.
-B=${KM_BIN_DIR:-$(cd "$(dirname "$0")/../bin" && pwd)}/km-v130-f4738bc
+# KM IS USER-SUPPLIED and NOT redistributed here. Look in vendor/ first (where
+# setup.sh tells you to put it), then bin/, then honour KM_BIN_DIR.
+#
+# The binary is PLATFORM-SPECIFIC. A macOS build committed to this repo failed on
+# Linux with "Exec format error" -- which is the general hazard with bin/: it holds
+# binaries built for whichever machine produced them, and a clone on another
+# platform cannot run them. Obtain or build KM for YOUR platform.
+_d="$(cd "$(dirname "$0")/.." && pwd)"
+if [ -n "${KM_BIN_DIR:-}" ]; then B="$KM_BIN_DIR/km-v130-f4738bc"
+elif [ -x "$_d/vendor/km-v130-f4738bc" ]; then B="$_d/vendor/km-v130-f4738bc"
+else B="$_d/bin/km-v130-f4738bc"; fi
+[ -x "$B" ] || { echo "run-km-v130: KM binary not found/executable at $B -- see ./setup.sh --check" >&2; exit 2; }
 if [ -n "${HARNESS_OUT_DIR:-}" ]; then
   mkdir -p "$HARNESS_OUT_DIR"
   exec bash -c "set -o pipefail; \"\$0\" classify --route auto \"\$1\" | tee \"\$2\"" \

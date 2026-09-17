@@ -15,3 +15,6 @@ tests/__pycache__/
 
 # fetched by ./setup.sh from upstream; not redistributed here
 /vendor/
+
+# KM is user-supplied and platform-specific; see setup.sh
+/bin/km-*

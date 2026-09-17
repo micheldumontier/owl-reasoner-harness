@@ -114,7 +114,15 @@ scripts/        normalise.py (the one to read), plus historical one-offs that
                 still carry absolute paths from the machine they were written on
 docs/           setup notes and benchmark write-ups, including what was retracted
 baselines/      reference runs whose numbers are cited elsewhere
+bin/            pinned reference binaries -- ELF x86-64 ONLY, see below
+vendor/         fetched by ./setup.sh, gitignored, not redistributed
 ```
+
+**`bin/` is Linux x86-64 only.** It holds ~23 pinned rustdl builds (~1 GB) that the
+sha-pinning reproducibility model relies on, but they are ELF binaries and a clone on
+macOS or ARM cannot execute them -- a macOS KM build committed here failed on Linux
+with `Exec format error`, which is the same hazard in the other direction. Build or
+fetch reasoners for your own platform; `setup.sh` does that for the ones it can.
 
 ## Licence
 
