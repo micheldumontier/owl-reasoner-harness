@@ -167,7 +167,7 @@ class Normalised:
 def read_normalised(path: str) -> Normalised:
     """Read back a file written by `write`."""
     n = Normalised(source=path)
-    with open(path, encoding="utf-8", errors="replace") as fh:
+    with _open(path) as fh:
         for line in fh:
             line = line.rstrip("\n")
             if not line:
@@ -287,10 +287,30 @@ def parse_owx(path: str, reasoner: str = "konclude") -> Normalised:
     return n
 
 
+import gzip as _gzip
+
+
+def _open(path: str):
+    """Open a captured reasoner output, transparently handling gzip.
+
+    Reasoner output compresses ~36x (OWL functional syntax; a 563 MB ontology's
+    taxonomy goes to under 15 MB), and a full 1,920 x 7-arm sweep emits ~35 GB raw
+    per repeat. Storing it compressed is the difference between ~35 GB and ~1 GB on a
+    shared volume.
+
+    Compression happens AFTER an arm finishes, never by piping the reasoner through
+    gzip: a pipeline returns the LAST command's status, which is exactly how 22 KM
+    failures were once recorded as successes.
+    """
+    if path.endswith(".gz"):
+        return _gzip.open(path, "rt", encoding="utf-8", errors="replace")
+    return open(path, encoding="utf-8", errors="replace")
+
+
 def parse_hermit(path: str) -> Normalised:
     """HermiT `-c` taxonomy: `SubClassOf( <a> <b> )` / `EquivalentClasses( <a> <b> )`."""
     n = Normalised(source=path, reasoner="hermit")
-    with open(path, encoding="utf-8", errors="replace") as fh:
+    with _open(path) as fh:
         for line in fh:
             line = line.strip()
             if m := re.match(r"SubClassOf\(\s*<([^>]*)>\s*<([^>]*)>\s*\)", line):
@@ -306,7 +326,7 @@ def parse_rustdl(path: str) -> Normalised:
     """rustdl `classify` stdout: `direct<TAB>sub<TAB>sup`, `equiv<TAB>a<TAB>b…`,
     `unsat<TAB>iri`, plus `#`-prefixed banner lines."""
     n = Normalised(source=path, reasoner="rustdl")
-    with open(path, encoding="utf-8", errors="replace") as fh:
+    with _open(path) as fh:
         for line in fh:
             line = line.rstrip("\n")
             if line.startswith("#"):
@@ -328,7 +348,7 @@ def prefix_map(ontology: str) -> dict[str, str]:
     Shared by `declared_classes` and KM's prefixed-name resolver so the two cannot
     drift; KM >= v1.3.0 reports `pizza:American`, which needs this to become an IRI.
     """
-    txt = open(ontology, encoding="utf-8", errors="replace").read()
+    txt = _open(ontology).read()
     out: dict[str, str] = {}
     for m in re.finditer(r"Prefix\(\s*([A-Za-z0-9_.-]*):=<([^>]*)>\s*\)", txt):
         out[m.group(1)] = m.group(2)
@@ -341,7 +361,7 @@ def declared_classes(ontology: str) -> dict[str, str]:
     This is the R1 whitelist. Built from the source rather than from any reasoner's
     output, so no reasoner's internal synthetics can enter it.
     """
-    txt = open(ontology, encoding="utf-8", errors="replace").read()
+    txt = _open(ontology).read()
     prefixes = prefix_map(ontology)
 
     out: dict[str, str] = {}
@@ -390,7 +410,7 @@ def parse_km(path: str, ontology: str | None) -> Normalised:
     definers. Requires `--ontology` to supply the R1 whitelist / name->IRI map.
     """
     n = Normalised(source=path, reasoner="km")
-    data = json.load(open(path, encoding="utf-8", errors="replace"))
+    data = json.load(_open(path))
     if ontology is None:
         raise SystemExit(
             "--format km requires --ontology SRC.ofn: KM reports bare local names and "
