@@ -441,7 +441,17 @@ pub fn main(a: RunArgs) -> Result<(), String> {
             Timer::BsdTime => read_timing_bsd(&tf),
             _ => read_timing(&tf),
         };
-        let (wall_s, peak_rss_kb) = parsed.unwrap_or((Some(fallback_wall), None));
+        // WALL COMES FROM `Instant`, NOT FROM `time`. Both GNU and BSD `time` report
+        // hundredths of a second, so a reasoner finishing in 20 ms is measured in TWO
+        // ticks and one tick of jitter is 50% error -- on a fast native reasoner that
+        // is the whole measurement. A pilot read 0.0% run-to-run spread for rustdl and
+        // KM, which was quantization being mistaken for stability.
+        //
+        // `Instant` spans the same one invocation and includes the `time`+`timeout`
+        // spawn, a few ms that is UNIFORM across reasoners and so does not bias a
+        // comparison. RSS still comes from `time`, which is the only source for it.
+        let peak_rss_kb = parsed.and_then(|(_, r)| r);
+        let wall_s = Some(fallback_wall);
         fs::remove_file(&tf).ok();
 
         let (out_sha256, out_lines) = if a.digest_output && !stdout.is_empty() {
