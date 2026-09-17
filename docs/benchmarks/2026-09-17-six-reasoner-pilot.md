@@ -133,3 +133,77 @@ whoever writes the next comparison.**
 * **The contract must record what it could not enforce.** See the memory note above.
 * A JSONL that can end mid-record after a killed run needs a tolerant reader; three of
   the six files carried a truncated final line.
+
+---
+
+# Re-run with interleaving, repeats and the timing fix (2026-09-17, second pass)
+
+Five instrument fixes, then 24 ontologies x 7 arms x 3 repeats, arm order rotated per
+pass, after a page-cache warm-up. `rustdlx` is rustdl at `--pair-timeout-ms 0
+--global-timeout-ms 0`, carried as its own arm because rustdl's SHIPPED default has a
+5 ms per-pair budget the other five reasoners do not have.
+
+| arm | ans | t/o | decl | fail | inc | MATCH | part | DIFF | n/a | FP | MISSED | medW | maxW | medR | netR | maxR |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| rustdl | 19 | 5 | 0 | 0 | 1 | 16 | 0 | 0 | 1 | 0 | 0 | 0.022 | 0.87 | 16 | 10 | 447 |
+| rustdlx | 18 | 6 | 0 | 0 | 0 | 15 | 0 | 0 | 2 | 0 | 0 | 0.022 | 0.98 | 16 | 10 | 448 |
+| KM | 22 | 1 | 1 | 0 | 0 | 15 | 2 | 0 | 0 | 0 | 776 | 0.092 | 0.97 | 12 | 9 | 194 |
+| Konclude | 23 | 1 | 0 | 0 | 0 | 17 | 0 | 0 | 0 | 0 | 0 | 0.092 | 0.61 | 39 | 11 | 222 |
+| HermiT | 19 | 4 | 1 | 0 | 0 | 17 | 0 | 0 | 0 | 0 | 0 | 0.677 | 21.71 | 252 | 132 | 2430 |
+| JFact | 18 | 6 | 0 | 0 | 0 | 14 | 0 | 0 | 3 | 0 | 0 | 0.889 | 10.28 | 312 | 190 | 1607 |
+| ELK | 23 | 1 | 0 | 0 | 0 | 15 | 2 | 0 | 0 | 0 | 55 | 0.596 | 2.16 | 182 | 23 | 517 |
+
+## `fail` is now zero everywhere
+
+Both cells previously reported as failures were honest refusals of SWRL — KM's
+`unsupported: DL-safe rules`, HermiT's `built-in atoms are not supported yet`. They are
+`decl` now. The four-valued outcome was argued for on principle and is carried here by
+exactly two cells; the mechanism is verified, its frequency is not.
+
+`inc` is readable only because stderr is now captured, and shows that **rustdl is the
+only one of the six that reports its own incompleteness at all**. A blank in that column
+means "no such signal exists", not "complete".
+
+## rustdl's shipped budget strictly dominates its exhaustive setting
+
+`rustdlx` answers one FEWER ontology (loses `ore_ont_2182` to the cap) for identical
+correctness — FP=0, MISSED=0 both ways. The 5 ms per-pair budget costs nothing on this
+slice and buys a completion.
+
+## THE WALL NUMBERS ARE NOT ALL COMPARABLE, AND THE PATTERN IS NOT THE OBVIOUS ONE
+
+Spread across the three repeats, median over common-solved:
+
+| rustdl | Konclude | rustdlx | ELK | JFact | HermiT | **KM** |
+|---:|---:|---:|---:|---:|---:|---:|
+| 5.9% | 5.4% | 21.0% | 35.8% | 42.5% | 43.7% | **65.8%** |
+
+The expected story was "native reasoners stable, JVM reasoners jittery from JIT and GC".
+**That is wrong: KM is native and is the LEAST stable arm of the seven.** Only rustdl and
+Konclude are stable to ~5%.
+
+Consequence: `medW` for KM, HermiT, JFact and ELK carries a +-35-66% error bar, so
+**KM 0.092 vs Konclude 0.092 is not a tie** — one is solid, the other could be 0.05 or
+0.15. Only differences of roughly 2x or more are claimable for four of the seven arms.
+
+**The number that would have falsified the story was the one that went missing.** The
+first version of this table printed KM's spread as `n/a` — a transient read of a
+still-flushing JSONL — and the tidy native/JVM split was nearly published on that basis.
+
+## Instrument fixes this pass required
+
+1. **Wall came from `time`, which reports hundredths of a second.** A 20 ms reasoner was
+   measured in two ticks, so one tick of jitter is 50% error; the distinct wall values
+   were literally {0.01, 0.02, 0.03, ...}. A reported "0.0% spread" for rustdl and KM was
+   quantization mistaken for stability. Wall now comes from the nanosecond `Instant`
+   already spanning the same invocation; RSS still from `time`, its only source.
+2. **Fixed arm order and a single run per cell.** Now 3 repeats with rotated order.
+3. **Cold page cache**, worth up to 3.7x on medians. Now a warm-up pass.
+4. **stderr discarded**, which is where incompleteness is reported. Now captured.
+5. **`declined` pooled with failure.** Now its own outcome.
+
+## Still not supported by these numbers
+
+Memory is UNENFORCED on this host, so `maxR` is what the reasoners chose to use, not what
+they would do under a limit. `netR` for the JVM three subtracts a constant floor measured
+on a 2-class ontology and is approximate. `maxW`/`maxR` are single observations at n=24.
