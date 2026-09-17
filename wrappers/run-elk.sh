@@ -19,7 +19,7 @@
 # Exit: 0 answered, 3 DECLINED (unsupported construct -- an honest refusal, not a
 # failure), 2 usage, 1 failed.
 set -u
-JAR=${ROBOT_JAR:-$HOME/eval-tools/robot.jar}
+JAR=${ROBOT_JAR:-$(cd "$(dirname "$0")/../vendor" 2>/dev/null && pwd)/robot.jar}
 DIR=$(cd "$(dirname "$0")/../java" && pwd)
 case "${1:-}" in --version|-V) echo "elk via ReasonerCli (robot.jar: $JAR)"; exit 0 ;; esac
 [ -f "$JAR" ] || { echo "run-elk: robot.jar not found at $JAR; set ROBOT_JAR" >&2; exit 2; }
@@ -65,5 +65,8 @@ fi
 # under `ulimit -v` that pushed ELK over the limit intermittently: 1 boot failure in
 # 5 with NO error message at all, a silent rc=1 that in a 1,920-ontology sweep would
 # read as the reasoner failing on those ontologies. Constrained, it is 5/5.
+VJ="$(cd "$(dirname "$0")/../vendor" 2>/dev/null && pwd)"
+[ -x "$VJ/jdk/bin/java" ] && PATH="$VJ/jdk/bin:$PATH"
+[ -x "$VJ/jdkhome/bin/java" ] && PATH="$VJ/jdkhome/bin:$PATH"
 JT="${RAYON_NUM_THREADS:-4}"
 exec java -XX:ActiveProcessorCount=${JT} -Xmx${XMX} -Dfile.encoding=UTF-8 -cp "$JAR:$DIR" ReasonerCli elk "$1" "$out"

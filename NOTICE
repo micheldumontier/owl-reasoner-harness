@@ -1,0 +1,8 @@
+This project is dual-licensed under MIT OR Apache-2.0 (see LICENSE-MIT and
+LICENSE-APACHE), matching the `license` field in Cargo.toml.
+
+THIS LICENCE COVERS THIS HARNESS ONLY. It does not cover the reasoners it drives,
+which ./setup.sh downloads from their own distributors and which carry their own
+terms -- Konclude, ROBOT (bundling HermiT, ELK and JFact), the Temurin JDK, and any
+rustdl or Kobayashi-MaRust build you supply. Nothing under vendor/ is redistributed
+by this repository; it is fetched at setup time from upstream.

@@ -12,3 +12,6 @@ tests/__pycache__/
 
 # compiled output of java/ReasonerCli.java — wrappers build it on demand
 *.class
+
+# fetched by ./setup.sh from upstream; not redistributed here
+/vendor/

@@ -16,4 +16,8 @@ fi
 # BINARY PATH is env-overridable: the cluster default is kept, but a second machine
 # (or a non-Linux host) needs its own build. Set KONCLUDE_BIN to the REAL executable
 # -- `<dist>/Binaries/Konclude`, not the top-level shim, which fails rc=127.
-exec "${KONCLUDE_BIN:-/data/dumontier/reasoners/konclude}" classification -i "$1" -o "$out"
+# Default to the vendored build (./setup.sh); KONCLUDE_BIN still overrides. The
+# launcher script in the distribution cds into its own directory, so point at the
+# REAL executable under Binaries/.
+: "${KONCLUDE_BIN:=$(cd "$(dirname "$0")/../vendor" 2>/dev/null && pwd)/konclude/Binaries/Konclude}"
+exec "$KONCLUDE_BIN" classification -i "$1" -o "$out"
