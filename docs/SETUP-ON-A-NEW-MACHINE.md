@@ -335,3 +335,38 @@ from completers), and neither a sweep nor the MISSED net can see a verdict chang
 * `rustdl/docs/releases/RELEASE-PROCESS.md` — §4 "Comparison rules that have each cost a wrong
   result" is the highest-value page here.
 * `docs/missed-net.md` — the ΔMISSED net.
+
+## JVM reasoners on g1 (2026-09-17)
+
+g1 had no JVM at all, so HermiT, ELK and FaCT++/JFact could not run there — while the
+Mac has all six but no `RLIMIT_AS`, so the memory half of a contract is unenforceable.
+Neither host could carry the full contract. g1 now can.
+
+```sh
+# JDK (Temurin 17), ~180 MB
+mkdir -p /data/dumontier/jdk && cd /data/dumontier/jdk
+curl -sL -o jdk.tgz "https://api.adoptium.net/v3/binary/latest/17/ga/linux/x64/jdk/hotspot/normal/eclipse"
+tar xzf jdk.tgz && ln -sfn jdk-17* jdk
+
+# robot.jar — VERSION MUST MATCH the other hosts
+curl -sL -o /data/dumontier/robot.jar \
+  https://github.com/ontodev/robot/releases/download/v1.9.10/robot.jar
+
+export PATH=/data/dumontier/jdk/jdk/bin:$PATH
+javac -cp /data/dumontier/robot.jar -d java java/ReasonerCli.java
+```
+
+**MATCH THE robot.jar VERSION ACROSS HOSTS.** The first fetch used `latest/v1.9.6`
+because that is what a stale URL pointed at, which would have put **different bundled
+HermiT / ELK / JFact versions on the two machines** and silently corrupted any
+cross-host comparison. Both hosts now carry `16a73c074f3df359` — compare the sha256,
+not the filename. Validated: the driver on g1 reproduces the Mac's pizza taxonomy
+exactly (HermiT 181, JFact 181, ELK 135 SubClassOf).
+
+### Enforcing the memory contract
+
+`--mem-mb N` caps each child's address space via `ulimit -v`. Verified BINDING on g1 on
+`ore_ont_1422`: `--mem-mb 100000` gives `ok` at 314 MB peak, `--mem-mb 200` gives
+`err_reject` with RSS pinned just under the limit. On macOS there is no `RLIMIT_AS`, so
+the call is a no-op and the run must record memory as UNENFORCED rather than imply the
+cap held.

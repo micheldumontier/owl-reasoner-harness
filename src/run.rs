@@ -97,6 +97,17 @@ pub struct RunArgs {
     /// silently dropped, because a silent exclusion once inflated a corpus share 3×.
     #[arg(long)]
     pub max_bytes: Option<u64>,
+    /// Enforce an address-space cap (MB) on each child, via `ulimit -v`. Recorded in
+    /// the header; when the platform cannot enforce it the run says so rather than
+    /// implying the cap held.
+    ///
+    /// THE MEMORY LIMIT IS PART OF THE ANSWER, NOT JUST THE COST. KM on pizza returns
+    /// 479 subsumptions under a 20 GB cap and 474 under 48 GB -- deterministic, 3 runs
+    /// each way, both exiting 0. Two labs running one binary on one file under
+    /// different limits get different closures, silently. So a contract that cannot be
+    /// enforced must be visible as unenforced.
+    #[arg(long)]
+    pub mem_mb: Option<u64>,
     /// File extensions to include.
     #[arg(long, default_value = "owl,ofn,owx,omn,ttl,rdf")]
     pub ext: String,
@@ -368,6 +379,21 @@ pub fn main(a: RunArgs) -> Result<(), String> {
             .map(|t| t.replace("{}", &path.display().to_string()))
             .collect();
 
+        // `ulimit -v` caps ADDRESS SPACE (RLIMIT_AS). Darwin has no RLIMIT_AS, so the
+        // call fails there; `|| true` keeps the wrapper alive rather than turning every
+        // case into a 1 ms err_reject, which is exactly how a previous run produced
+        // "0 classified / 424 DNF" and had it read as a result.
+        let (exe, pre): (String, Vec<String>) = match a.mem_mb {
+            Some(mb) => (
+                "sh".into(),
+                vec![
+                    "-c".into(),
+                    format!("ulimit -v {} 2>/dev/null || true; exec \"$0\" \"$@\"", mb * 1024),
+                    a.reasoner.display().to_string(),
+                ],
+            ),
+            None => (a.reasoner.display().to_string(), Vec::new()),
+        };
         let mut cmd = match timer {
             Timer::GnuTime => {
                 let mut c = Command::new("/usr/bin/time");
@@ -377,7 +403,8 @@ pub fn main(a: RunArgs) -> Result<(), String> {
                     .arg(&tf)
                     .arg(&timeout_bin)
                     .arg(a.cap_secs.to_string())
-                    .arg(&a.reasoner)
+                    .arg(&exe)
+                    .args(&pre)
                     .args(&argv);
                 c
             }
@@ -388,18 +415,19 @@ pub fn main(a: RunArgs) -> Result<(), String> {
                     .arg(&tf)
                     .arg(&timeout_bin)
                     .arg(a.cap_secs.to_string())
-                    .arg(&a.reasoner)
+                    .arg(&exe)
+                    .args(&pre)
                     .args(&argv);
                 c
             }
             Timer::TimeoutOnly => {
                 let mut c = Command::new(&timeout_bin);
-                c.arg(a.cap_secs.to_string()).arg(&a.reasoner).args(&argv);
+                c.arg(a.cap_secs.to_string()).arg(&exe).args(&pre).args(&argv);
                 c
             }
             Timer::None_ => {
-                let mut c = Command::new(&a.reasoner);
-                c.args(&argv);
+                let mut c = Command::new(&exe);
+                c.args(&pre).args(&argv);
                 c
             }
         };
