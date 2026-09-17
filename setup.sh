@@ -58,6 +58,12 @@ get() { # name version sha url
   case "$url" in
     *.zip) (cd "$V" && unzip -qo "$dest" && rm -f "$dest") &&
            ln -sfn "$(cd "$V" && ls -d Konclude-* 2>/dev/null | head -1)" "$final" ;;
+    *.tar.gz|*.tgz)
+           mkdir -p "$V/$name-$ver" && tar xzf "$dest" -C "$V/$name-$ver" && rm -f "$dest"
+           # the binary may sit at any depth inside the archive
+           _b="$(find "$V/$name-$ver" -type f -name "$name*" -perm -u+x 2>/dev/null | head -1)"
+           [ -z "$_b" ] && _b="$(find "$V/$name-$ver" -type f -perm -u+x 2>/dev/null | head -1)"
+           [ -n "$_b" ] && ln -sfn "$_b" "$final" ;;
     *)     mv "$dest" "$final"; [ "$name" = rustdl ] && chmod +x "$final" ;;
   esac
   say "$name" "$ver" "installed, sha verified"
@@ -86,8 +92,9 @@ fi
 
 # ---- supplied by you
 echo "== supplied by you =="
-KMB="$(ls "$V"/km-* 2>/dev/null | head -1)"
-say KM "-" "${KMB:-not present -- publishes no binaries; put yours at vendor/km-<version>}"
+if [ ! -e "$V/km" ]; then
+  say KM "-" "no published binary for $PLAT (linux-x64 only from v1.4.0); put yours at vendor/km"
+fi
 say corpus "-" "any directory of .owl/.ofn files; pass with --corpus"
 
 cat <<'NOTE'

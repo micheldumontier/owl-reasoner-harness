@@ -27,4 +27,12 @@ rustdl	mac-aarch64	v0.4.28	2c55072991e79998c2c0c61416aadd280b72b17ea8e0b72588645
 rustdl	linux-x64	v0.4.28	20b31b3f53474e95e533e0eae84d7d85da48be6987599f4ba6ee947e65ab6bea	https://github.com/MaastrichtU-IDS/rustdl/releases/download/v0.4.28/rustdl-x86_64-unknown-linux-musl
 rustdl	linux-aarch64	v0.4.28	499e29a731276f4d837d24b447b74c56124e02831ee9b651518b70f5e9e20a1e	https://github.com/MaastrichtU-IDS/rustdl/releases/download/v0.4.28/rustdl-aarch64-unknown-linux-musl
 
-# Kobayashi-MaRust publishes no binaries; supply your own at vendor/km-<version>.
+# Kobayashi-MaRust. Published binaries begin at v1.4.0 -- v1.3.0 and earlier ship
+# source only, which is why a v1.3.0 binary here has to be built or copied.
+#
+# NOTE THE VERSION SKEW: every KM measurement recorded in docs/ was made with
+# v1.3.0 (f4738bc). v1.4.0 is a DIFFERENT REASONER and its numbers are not
+# interchangeable with those; re-baseline before citing it alongside them.
+#
+# Linux x86_64 only -- no macOS or ARM build is published.
+km	linux-x64	v1.4.0	aea771203e0508986125daf26517d802c63322621009fbd7b3ccbe0a10194ec8	https://github.com/bio-ontology-research-group/kobayashi-marust/releases/download/v1.4.0/km-v1.4.0-linux-x86_64.tar.gz
