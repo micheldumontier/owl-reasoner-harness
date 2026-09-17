@@ -1,88 +1,108 @@
 #!/usr/bin/env bash
-# Provision the reasoners this harness drives, into ./vendor.
+# Provision the pinned reasoners for THIS platform into ./vendor.
 #
-# Fetches what is freely redistributable (a JDK, robot.jar, Konclude) and tells you
-# what you must supply yourself. Re-running is safe: anything already present is left
-# alone. Nothing is installed system-wide and nothing needs root.
+# Every artifact is named in reasoners.lock with a sha256 and is VERIFIED after
+# download. A checksum mismatch aborts rather than proceeding, because the whole point
+# of pinning is knowing which binary produced a number.
 #
-#   ./setup.sh              # fetch everything obtainable
-#   ./setup.sh --check      # report what is present, fetch nothing
+# Nothing is installed system-wide, nothing needs root, and nothing upstream is
+# redistributed by this repository.
+#
+#   ./setup.sh            fetch what is missing
+#   ./setup.sh --check    report only, fetch nothing
+#   ./setup.sh --force    re-fetch even if present
 set -u
 cd "$(dirname "$0")"
-V="$PWD/vendor"; mkdir -p "$V"
-CHECK=0; [ "${1:-}" = "--check" ] && CHECK=1
+V="$PWD/vendor"; LOCK="$PWD/reasoners.lock"; mkdir -p "$V"
+MODE="${1:-}"
 
 case "$(uname -s)" in
-  Linux)  OS=linux;  JDK_OS=linux; KON="Konclude-v0.7.0-1138-Linux-x64-GCC-Static-Qt5.12.10" ;;
-  Darwin) OS=mac;    JDK_OS=mac;   KON="Konclude-v0.7.0-1138-OSX-x64-Clang-Static-Qt5.12.10" ;;
+  Linux)  OS=linux ;;
+  Darwin) OS=mac ;;
   *) echo "unsupported OS: $(uname -s)" >&2; exit 2 ;;
 esac
 case "$(uname -m)" in
-  x86_64|amd64) ARCH=x64 ;;
+  x86_64|amd64)  ARCH=x64 ;;
   arm64|aarch64) ARCH=aarch64 ;;
   *) echo "unsupported arch: $(uname -m)" >&2; exit 2 ;;
 esac
+PLAT="$OS-$ARCH"
+echo "== platform: $PLAT   vendor: $V =="
 
-have() { [ -e "$1" ]; }
-say()  { printf "  %-34s %s\n" "$1" "$2"; }
+sha_of() { # portable: shasum on macOS, sha256sum on Linux
+  if command -v sha256sum >/dev/null; then sha256sum "$1" | cut -d' ' -f1
+  else shasum -a 256 "$1" | cut -d' ' -f1; fi
+}
+say() { printf "  %-10s %-14s %s\n" "$1" "$2" "$3"; }
 
-fetch() { # url dest
-  [ $CHECK = 1 ] && return 0
-  curl -fsSL --max-time 1800 -o "$2.part" "$1" && mv "$2.part" "$2"
+get() { # name version sha url
+  local name=$1 ver=$2 want=$3 url=$4 dest="$V/$1.download"
+  case "$name" in
+    robot)    final="$V/robot.jar" ;;
+    rustdl)   final="$V/rustdl" ;;
+    konclude) final="$V/konclude" ;;
+    *)        final="$V/$name" ;;
+  esac
+  if [ -e "$final" ] && [ "$MODE" != "--force" ]; then say "$name" "$ver" "present"; return 0; fi
+  if [ "$MODE" = "--check" ]; then say "$name" "$ver" "MISSING"; return 0; fi
+
+  curl -fsSL --max-time 1800 -o "$dest" "$url" || { say "$name" "$ver" "FETCH FAILED"; return 1; }
+  local got; got=$(sha_of "$dest")
+  if [ "$got" != "$want" ]; then
+    rm -f "$dest"
+    say "$name" "$ver" "CHECKSUM MISMATCH -- refusing"
+    echo "      expected $want" >&2
+    echo "      got      $got" >&2
+    return 1
+  fi
+  case "$url" in
+    *.zip) (cd "$V" && unzip -qo "$dest" && rm -f "$dest") &&
+           ln -sfn "$(cd "$V" && ls -d Konclude-* 2>/dev/null | head -1)" "$final" ;;
+    *)     mv "$dest" "$final"; [ "$name" = rustdl ] && chmod +x "$final" ;;
+  esac
+  say "$name" "$ver" "installed, sha verified"
 }
 
-echo "== vendor: $V =="
+# ---- pinned artifacts for this platform
+while IFS=$'\t' read -r name plat ver sha url; do
+  case "$name" in ''|\#*) continue ;; esac
+  [ "$plat" = any ] || [ "$plat" = "$PLAT" ] || continue
+  get "$name" "$ver" "$sha" "$url"
+done < "$LOCK"
 
-# ---- JDK (Temurin 17): needed by HermiT, ELK and FaCT++/JFact via java/ReasonerCli
-if have "$V/jdk/bin/java"; then say "jdk" "present"
-elif [ $CHECK = 1 ]; then say "jdk" "MISSING"
+# ---- JDK: needed by HermiT, ELK and FaCT++/JFact via java/ReasonerCli. Fetched from
+# the Adoptium API rather than pinned by sha, because the API serves a moving "latest
+# 17" -- the JVM is a host for the reasoners, not one of the things under test.
+if [ -x "$V/jdk/bin/java" ] || [ -x "$V/jdk/Contents/Home/bin/java" ]; then say jdk 17 "present"
+elif [ "$MODE" = "--check" ]; then say jdk 17 "MISSING"
 else
-  fetch "https://api.adoptium.net/v3/binary/latest/17/ga/${JDK_OS}/${ARCH}/jdk/hotspot/normal/eclipse" "$V/jdk.tgz" \
+  curl -fsSL --max-time 1800 -o "$V/jdk.tgz" \
+    "https://api.adoptium.net/v3/binary/latest/17/ga/${OS/mac/mac}/${ARCH}/jdk/hotspot/normal/eclipse" \
     && tar xzf "$V/jdk.tgz" -C "$V" && rm -f "$V/jdk.tgz" \
     && ln -sfn "$(cd "$V" && ls -d jdk-17* | head -1)" "$V/jdk" \
-    && say "jdk" "installed" || say "jdk" "FETCH FAILED"
-  [ "$OS" = mac ] && [ -d "$V/jdk/Contents/Home" ] && ln -sfn "$V/jdk/Contents/Home" "$V/jdkhome"
+    && { [ -d "$V/jdk/Contents/Home" ] && ln -sfn "$V/jdk/Contents/Home" "$V/jdkhome"; true; } \
+    && say jdk 17 "installed" || say jdk 17 "FETCH FAILED"
 fi
 
-# ---- robot.jar: bundles HermiT, ELK and JFact. PIN THE VERSION -- different robot
-# releases bundle different reasoner versions, and mixing them across hosts silently
-# corrupts a comparison. Compare the sha256, never the filename.
-if have "$V/robot.jar"; then say "robot.jar" "present ($(shasum -a 256 "$V/robot.jar" 2>/dev/null | cut -c1-16 || sha256sum "$V/robot.jar" | cut -c1-16))"
-elif [ $CHECK = 1 ]; then say "robot.jar" "MISSING"
-else
-  fetch "https://github.com/ontodev/robot/releases/download/v1.9.10/robot.jar" "$V/robot.jar" \
-    && say "robot.jar" "installed (expect sha 16a73c074f3df359)" || say "robot.jar" "FETCH FAILED"
-fi
-
-# ---- Konclude
-if have "$V/konclude/Binaries/Konclude"; then say "konclude" "present"
-elif [ $CHECK = 1 ]; then say "konclude" "MISSING"
-else
-  fetch "https://github.com/konclude/Konclude/releases/download/v0.7.0-1138/${KON}.zip" "$V/kon.zip" \
-    && (cd "$V" && unzip -qo kon.zip && rm -f kon.zip && ln -sfn "$KON" konclude) \
-    && say "konclude" "installed" || say "konclude" "FETCH FAILED -- see notes below"
-fi
-
-# ---- things you must supply
+# ---- supplied by you
 echo "== supplied by you =="
-say "rustdl"  "$( [ -n "${MISSED_NET_RUSTDL:-}" ] && echo "MISSED_NET_RUSTDL=$MISSED_NET_RUSTDL" || echo 'build github.com/MaastrichtU-IDS/rustdl, then export MISSED_NET_RUSTDL' )"
 KMB="$(ls "$V"/km-* 2>/dev/null | head -1)"
-say "KM"      "${KMB:-optional; place the binary at vendor/km-<version> and set KM_BIN_DIR}"
-say "corpus"  "$( [ -n "${CORPUS:-}" ] && echo "CORPUS=$CORPUS" || echo 'any directory of .owl/.ofn files; pass with --corpus' )"
+say KM "-" "${KMB:-not present -- publishes no binaries; put yours at vendor/km-<version>}"
+say corpus "-" "any directory of .owl/.ofn files; pass with --corpus"
 
 cat <<'NOTE'
 
 == notes ==
-* Konclude's LINUX static build needs libpcre.so.3 (PCRE1), which modern distros no
-  longer ship. If it exits 127 with "libpcre.so.3: cannot open shared object file",
-  install the real libpcre3 and DO NOT symlink PCRE2 into place -- an ABI mismatch
-  could corrupt oracle output, which is worse than having no oracle.
-* GNU `time` is used for peak RSS. Without it the harness still runs and says so,
-  recording peak_rss_kb as null rather than pretending. On macOS it uses BSD `time -l`.
-* `ulimit -v` (--mem-mb) is a no-op on macOS, which has no RLIMIT_AS. A run there
-  records memory as unenforced rather than implying the cap held.
+* Konclude's LINUX build needs libpcre.so.3 (PCRE1), which modern distros dropped. If
+  it exits 127 on "libpcre.so.3", install the real libpcre3 -- do NOT symlink PCRE2,
+  an ABI mismatch could corrupt oracle output, which is worse than no oracle.
+* Konclude ships no arm64 build. On Apple Silicon the x64 one runs under Rosetta 2.
+* GNU `time` (Linux) or BSD `time -l` (macOS) supplies peak RSS. With neither, the
+  harness still runs and records peak_rss_kb as null rather than inventing it.
+* `--mem-mb` uses `ulimit -v` and is a no-op on macOS, which has no RLIMIT_AS.
 
-Validate before trusting any result:
+Smoke-test before trusting anything:
+  cargo build --release
   ./target/release/owl-reasoner-harness run --corpus <dir> \
     --reasoner wrappers/run-konclude.sh --args '{}' --cap-secs 60 --out /tmp/smoke.jsonl
 NOTE

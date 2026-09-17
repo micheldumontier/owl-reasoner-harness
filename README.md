@@ -13,8 +13,8 @@ scores correctness against a gold signature rather than against exit codes.
 git clone https://github.com/micheldumontier/owl-reasoner-harness
 cd owl-reasoner-harness
 cargo build --release
-./setup.sh                    # fetches a JDK, robot.jar and Konclude into ./vendor
-./setup.sh --check            # what is present, what you must supply
+./setup.sh                    # fetch the pinned reasoners for YOUR platform
+./setup.sh --check            # report only; --force re-fetches
 
 ./target/release/owl-reasoner-harness run \
   --corpus /path/to/ontologies \
@@ -26,10 +26,18 @@ cargo build --release
 One JSONL record per ontology, plus a header pinning the binary sha256, the cap, the
 thread pin and the corpus. `setup.sh` needs no root and installs nothing system-wide.
 
-**You supply**: the corpus (any directory of `.owl`/`.ofn`), a
-[rustdl](https://github.com/MaastrichtU-IDS/rustdl) build if you want that arm
-(`export MISSED_NET_RUSTDL=/path/to/rustdl`), and a KM binary if you have one.
-Everything else `setup.sh` fetches.
+`setup.sh` reads **`reasoners.lock`** — one row per artifact per platform, each with a
+sha256 that is **verified after download**; a mismatch aborts rather than proceeding,
+since the point of pinning is knowing which binary produced a number. It fetches
+rustdl, Konclude, robot.jar (HermiT + ELK + FaCT++/JFact) and a JDK, needs no root,
+and redistributes nothing — `vendor/` is gitignored.
+
+**You supply**: the corpus (any directory of `.owl`/`.ofn`), and a KM binary if you
+have one (KM publishes none). To measure your own rustdl build instead of the pinned
+one, `export MISSED_NET_RUSTDL=/path/to/rustdl`.
+
+Changing a pin changes your results — a different `robot.jar` bundles different
+HermiT/ELK/JFact versions. Bump a row deliberately and re-baseline anything you cite.
 
 ## Why it is shaped this way
 
@@ -118,11 +126,10 @@ bin/            pinned reference binaries -- ELF x86-64 ONLY, see below
 vendor/         fetched by ./setup.sh, gitignored, not redistributed
 ```
 
-**`bin/` is Linux x86-64 only.** It holds ~23 pinned rustdl builds (~1 GB) that the
-sha-pinning reproducibility model relies on, but they are ELF binaries and a clone on
-macOS or ARM cannot execute them -- a macOS KM build committed here failed on Linux
-with `Exec format error`, which is the same hazard in the other direction. Build or
-fetch reasoners for your own platform; `setup.sh` does that for the ones it can.
+**`bin/` is legacy and Linux x86-64 only.** It holds ~23 historical rustdl builds
+(~1 GB) from before `reasoners.lock` existed; a clone on macOS or ARM cannot execute
+them. Nothing in the documented workflow needs it — `setup.sh` fetches a verified
+binary for your platform instead.
 
 ## Licence
 

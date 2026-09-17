@@ -28,7 +28,13 @@
 #    add ~90 GB of reads over a full corpus; missed-net.sh verifies the sha ONCE,
 #    before the sweep, and records it in the arm manifest.
 set -u
-: "${MISSED_NET_RUSTDL:?set MISSED_NET_RUSTDL to the pinned rustdl binary}"
+# Default to the pinned binary ./setup.sh fetched and sha-verified; the env var still
+# overrides, which is how you measure a LOCAL build against the pinned one.
+if [ -z "${MISSED_NET_RUSTDL:-}" ]; then
+  _v="$(cd "$(dirname "$0")/../vendor" 2>/dev/null && pwd)/rustdl"
+  [ -x "$_v" ] && MISSED_NET_RUSTDL="$_v"
+fi
+: "${MISSED_NET_RUSTDL:?no rustdl: run ./setup.sh, or set MISSED_NET_RUSTDL to your build}"
 # The harness probes `--reasoner --version` for the run header. Without this arm the
 # probe falls through as if `--version` were an ONTOLOGY PATH, and the capture branch
 # below writes a garbage-named file into the output directory (the three provisioned

@@ -1,0 +1,30 @@
+# Pinned reasoners, per platform, with checksums.
+#
+# WHY A LOCKFILE. Reproducibility here rests on knowing exactly which binary produced
+# a number. The repo used to carry binaries in bin/ instead -- ~1 GB of ELF x86-64
+# that a clone on macOS or ARM cannot execute, and a macOS build committed there
+# failed on Linux with "Exec format error". Pinning by URL + sha256 gives the same
+# guarantee, works on every platform, and redistributes nothing.
+#
+# FORMAT: name<TAB>platform<TAB>version<TAB>sha256<TAB>url
+#   platform is "<os>-<arch>", or "any" for platform-independent artifacts.
+#   setup.sh fetches only rows matching the host, and VERIFIES the sha256 before use.
+#
+# CHANGING A PIN CHANGES YOUR RESULTS. A different robot.jar bundles different
+# HermiT/ELK/JFact versions; a different Konclude is a different reasoner. Bump a row
+# deliberately, and re-baseline anything you cite.
+
+robot	any	1.9.10	16a73c074f3df359a7338a84b4e0788785fe06117f931bb9796e9619ea776105	https://github.com/ontodev/robot/releases/download/v1.9.10/robot.jar
+
+konclude	linux-x64	v0.7.0-1138	37216c18f45a80165aec1e76aeefd62d933d6a3f8f134c5aca0707c676fda76e	https://github.com/konclude/Konclude/releases/download/v0.7.0-1138/Konclude-v0.7.0-1138-Linux-x64-GCC-Static-Qt5.12.10.zip
+konclude	mac-x64	v0.7.0-1138	b14900399dd373e5af8dbf9e3941914f701fa0ad079df3455e0ce88ba8463943	https://github.com/konclude/Konclude/releases/download/v0.7.0-1138/Konclude-v0.7.0-1138-OSX-x64-Clang-Static-Qt5.12.10.zip
+
+# Konclude ships no arm64 build. On Apple Silicon the mac-x64 zip runs under Rosetta 2;
+# on ARM Linux there is no option but to build from source.
+konclude	mac-aarch64	v0.7.0-1138	b14900399dd373e5af8dbf9e3941914f701fa0ad079df3455e0ce88ba8463943	https://github.com/konclude/Konclude/releases/download/v0.7.0-1138/Konclude-v0.7.0-1138-OSX-x64-Clang-Static-Qt5.12.10.zip
+
+rustdl	mac-aarch64	v0.4.28	2c55072991e79998c2c0c61416aadd280b72b17ea8e0b725886451d95946bb5e	https://github.com/MaastrichtU-IDS/rustdl/releases/download/v0.4.28/rustdl-aarch64-apple-darwin
+rustdl	linux-x64	v0.4.28	20b31b3f53474e95e533e0eae84d7d85da48be6987599f4ba6ee947e65ab6bea	https://github.com/MaastrichtU-IDS/rustdl/releases/download/v0.4.28/rustdl-x86_64-unknown-linux-musl
+rustdl	linux-aarch64	v0.4.28	499e29a731276f4d837d24b447b74c56124e02831ee9b651518b70f5e9e20a1e	https://github.com/MaastrichtU-IDS/rustdl/releases/download/v0.4.28/rustdl-aarch64-unknown-linux-musl
+
+# Kobayashi-MaRust publishes no binaries; supply your own at vendor/km-<version>.
