@@ -17,6 +17,9 @@ use serde::{Deserialize, Serialize};
 pub enum Outcome {
     Ok,
     Dnf,
+    /// The reasoner refused an input it does not claim to support (wrapper exit 3).
+    /// Sound behaviour, NOT a failure — see `from_status`.
+    Declined,
     ErrReject,
     ErrCrash,
     Skipped,
@@ -29,6 +32,13 @@ impl Outcome {
         match code {
             Some(0) => Outcome::Ok,
             Some(c) if c == cap_code => Outcome::Dnf,
+            // Exit 3 is the wrapper convention for "the reasoner DECLINED an input it
+            // does not claim to support" -- KM's `unsupported: DL-safe rules`, HermiT's
+            // "built-in atoms are not supported yet". That is sound behaviour and must
+            // not be pooled with a crash: in the first pilot both of the two `failed`
+            // cells were honest SWRL refusals, so the column read as failure for
+            // reasoners that were being correct.
+            Some(3) => Outcome::Declined,
             Some(_) => Outcome::ErrReject,
             None => Outcome::ErrCrash,
         }
@@ -38,6 +48,7 @@ impl Outcome {
         match self {
             Outcome::Ok => "ok",
             Outcome::Dnf => "dnf",
+            Outcome::Declined => "declined",
             Outcome::ErrReject => "err_reject",
             Outcome::ErrCrash => "err_crash",
             Outcome::Skipped => "skipped",

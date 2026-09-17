@@ -403,7 +403,7 @@ pub fn main(a: RunArgs) -> Result<(), String> {
                 c
             }
         };
-        cmd.stdout(Stdio::piped()).stderr(Stdio::null());
+        cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
         if let Some(t) = a.threads {
             cmd.env("RAYON_NUM_THREADS", t.to_string());
         }
@@ -413,10 +413,24 @@ pub fn main(a: RunArgs) -> Result<(), String> {
         let fallback_wall = t0.elapsed().as_secs_f64();
 
         let (outcome, stdout) = match out {
-            Ok(o) => (
-                Outcome::from_status(o.status.code(), CAP_EXIT_CODE),
-                o.stdout,
-            ),
+            Ok(o) => {
+                // STDERR IS WHERE INCOMPLETENESS IS REPORTED, so discarding it loses
+                // the signal that matters most. rustdl prints "The classification is
+                // SOUND ... but may be missing real ones" there; nulling it meant a
+                // pilot could not tell a truncated answer from a complete one, and the
+                // truncation had to be rediscovered by hand afterwards.
+                if !o.stderr.is_empty() {
+                    if let Ok(dir) = std::env::var("HARNESS_OUT_DIR") {
+                        let p = Path::new(&dir).join(format!("{ont}.stderr"));
+                        let _ = fs::create_dir_all(&dir);
+                        let _ = fs::write(p, &o.stderr);
+                    }
+                }
+                (
+                    Outcome::from_status(o.status.code(), CAP_EXIT_CODE),
+                    o.stdout,
+                )
+            }
             Err(e) => {
                 eprintln!("  {ont}: spawn failed: {e}");
                 (Outcome::ErrCrash, Vec::new())

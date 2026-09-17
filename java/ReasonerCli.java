@@ -60,8 +60,20 @@ public final class ReasonerCli {
       System.err.println("declined: " + e);
       System.exit(3);
     } catch (Throwable t) {
-      System.err.println("failed: " + t);
-      System.exit(1);
+      // A reasoner may report an unsupported construct as an ordinary exception
+      // rather than the typed UnsupportedEntailmentTypeException -- HermiT raises
+      // `IllegalArgumentException: A SWRL rule uses a built-in atom, but built-in
+      // atoms are not supported yet.` That is a DECLINE, not a crash, and pooling it
+      // with failures makes a reasoner look broken for being honest.
+      //
+      // Matching on message text is a heuristic, so it is kept DELIBERATELY NARROW:
+      // only an explicit "not supported"/"unsupported" phrase qualifies, and the full
+      // message is always printed so a misclassification is auditable. Widening this
+      // would start hiding real defects, which is the failure mode that matters.
+      String m = String.valueOf(t.getMessage()).toLowerCase();
+      boolean declined = m.contains("not supported") || m.contains("unsupported");
+      System.err.println((declined ? "declined: " : "failed: ") + t);
+      System.exit(declined ? 3 : 1);
     }
   }
 
