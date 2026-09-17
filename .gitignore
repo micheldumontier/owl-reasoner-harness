@@ -9,3 +9,6 @@
 !baselines/*.txt
 scripts/__pycache__/
 tests/__pycache__/
+
+# compiled output of java/ReasonerCli.java — wrappers build it on demand
+*.class
