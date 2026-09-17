@@ -54,6 +54,47 @@ sound; they differ only in how much they derive and how often they finish. **rus
 matched gold on every ontology it completed** — its cost here is the 5 timeouts at
 30 s, not correctness.
 
+
+## Performance: wall and peak RSS
+
+Over the **16** ontologies all six answered. Startup floor is min-of-5 on a trivial
+2-class ontology; `net` subtracts it.
+
+| reasoner | median wall | median RSS | max RSS | floor RSS | net RSS |
+|---|---:|---:|---:|---:|---:|
+| rustdl | **0.050 s** | 49 MB | 447 MB | 6 MB | 43 MB |
+| KM | 0.070 s | **35 MB** | 200 MB | 3 MB | 32 MB |
+| Konclude | 0.140 s | 56 MB | 221 MB | 28 MB | 28 MB |
+| ELK | 0.710 s | 178 MB | 475 MB | 159 MB | **19 MB** |
+| JFact | 1.320 s | 360 MB | 1,626 MB | 122 MB | 238 MB |
+| HermiT | 1.360 s | 253 MB | 2,656 MB | 120 MB | 133 MB |
+
+**Subtracting the floor reverses the memory ranking.** ELK looks like the second
+heaviest reasoner at 178 MB median and is in fact the *lightest* — **19 MB** of actual
+work, 89% of its footprint being the JVM. Reported raw, a memory table measures the
+runtime and calls it the reasoner. The three JVM reasoners cost **120–159 MB** and
+**0.26–0.37 s** before any reasoning happens, against rustdl's 6 MB / 0.00 s and KM's
+3 MB / 0.02 s.
+
+**Tails are where the memory is.** Medians span 35–360 MB but maxima span 200 MB to
+**2.7 GB** (HermiT on `ore_ont_1422`, 10x its own median; JFact 1.6 GB on
+`ore_ont_15013`, 4x). A median-only memory claim would miss the entire problem.
+
+### Two measurement caveats, both found the hard way
+
+**Cold cache moves the medians, by up to 3.7x.** Two runs of the identical binaries
+over the identical slice gave different wall medians — KM 0.262 s then 0.070 s, ELK
+1.152 s then 0.710 s, rustdl 0.131 s then 0.050 s — because the first run was the first
+touch of each ontology file. The same effect made a single-shot Konclude startup
+measurement read **1.07 s** against its true **0.06 s** (stable 5/5), a ~100 MB static
+binary paying page-cache cost once. **Warm the cache or interleave arms; a first run is
+not a measurement.** This is the same hazard already recorded for a fixed arm order
+buying a ~3.4% phantom.
+
+**RSS is meaningless without the thread pin, measured at 1.9x here.** `ore_ont_2182`
+reads 87,104 kB at `RAYON_NUM_THREADS=1` and 165,664 kB unpinned — same binary, same
+input. Every figure above is at 1 thread.
+
 ## The finding that nearly became a false headline
 
 The first adjudication scored **5 of 20** ontologies as oracle-contested, including
