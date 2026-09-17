@@ -207,3 +207,32 @@ still-flushing JSONL — and the tidy native/JVM split was nearly published on t
 Memory is UNENFORCED on this host, so `maxR` is what the reasoners chose to use, not what
 they would do under a limit. `netR` for the JVM three subtracts a constant floor measured
 on a 2-class ontology and is approximate. `maxW`/`maxR` are single observations at n=24.
+
+## Why KM's spread is 65.8%: arm ADJACENCY, not arm order
+
+Run back-to-back on an otherwise idle machine KM is stable and deterministic — 5.5% /
+5.6% / 9.0% spread on three ontologies, with a single distinct output hash across six
+repeats. So the 65.8% is not KM being nondeterministic.
+
+Nor is it host contention, and the control that rules that out is in the table itself:
+**rustdl ran in the same three passes and is stable to under 3%** (0.018 / 0.020 / 0.019
+where KM gives 0.058 / 0.104 / 0.093 on the same ontology). Whatever moves KM does not
+move rustdl.
+
+It is what ran IMMEDIATELY BEFORE. KM preceded by a 2.4 GB JVM run, five times, against
+KM alone five times: medians 0.073 s vs 0.062 s (1.19x), but the distribution is bimodal
+— **2 of 5 post-JVM runs are ~2x slower** (0.109, 0.119 against a 0.048-0.067 baseline).
+An intermittent ~2x penalty is exactly what produces a 65.8% median spread over three
+samples.
+
+**Rotating arm order does not fix this; it redistributes it.** Rotation balances which
+arm runs FIRST, but each arm still has a different NEIGHBOUR on every pass, and for a
+memory-sensitive reasoner the neighbour is what matters. Over three passes that is three
+samples of a bimodal distribution.
+
+What actually works, in order of cost: run each arm on an idle host with nothing else
+resident; or many more repeats and report the distribution rather than a median; or
+accept that only differences above the measured spread are claimable — which is what
+this document does.
+
+**rustdl and Konclude are measurable at 3 repeats. KM, HermiT, JFact and ELK are not.**
