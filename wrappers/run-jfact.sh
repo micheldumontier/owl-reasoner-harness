@@ -37,21 +37,32 @@ fi
 #    Could not reserve enough space for 12582912KB object heap"
 # In a test run that silently failed all 24 ontologies on all three JVM arms.
 #
-# MEASURED, and the boundary is NOT CRISP. Under `ulimit -v 9216MB`, HermiT boots at
-# -Xmx6144m but not 7168m; ELK boots at 5632m, FAILS at 5120m, and boots again at
-# 4608m. That non-monotonicity (address-space layout varies with ASLR) means any
-# formula hugging the limit will flake intermittently across a 1,920-ontology run.
-# So: half the cap, which passes all three with margin.
+# `ulimit -v` caps ADDRESS SPACE, and the JVM RESERVES far more than it commits, so
+# -Xmx must sit under the cap or the VM does not merely spill -- it fails to boot:
+#   "Could not reserve enough space for NNNNNNKB object heap"
+# In one test run that silently failed all 24 ontologies on all three JVM arms.
 #
-# CONTRACT CONSEQUENCE, which must be stated and not glossed: under one `ulimit -v`
-# a native reasoner may use nearly the whole cap as working memory while a JVM
-# reasoner gets HALF. The memory contract is not uniform across the two families,
-# and a JVM `failed` may mean "could not reserve address space", not "ran out".
+# THE OVERHEAD IS FIXED, NOT PROPORTIONAL -- measured, after an earlier cap/2 rule
+# turned out to be over-conservative. At a 9216 MB cap the reservations are:
+#   CompressedClassSpaceSize  1024 MiB (reserved by DEFAULT, and trimmed below)
+#   ReservedCodeCacheSize      240 MiB
+#   binary, libs, stacks, GC   ~1 GiB
+# so `cap - 2048` holds across sizes: 4096->2048 (50% of cap), 10240->8192 (80%),
+# 20480->18432 (90%). The penalty shrinks as the cap grows.
+#
+# cap/2 was wrong because it was measured while GC threads were unpinned, which is a
+# DIFFERENT fault fixed just below. Two fixes were applied at once and only the pair
+# was verified; re-measured with threads pinned, 6144m boots 5/5 at a 9216 cap where
+# cap/2 would have allowed 4608m.
+#
+# Contract consequence, still worth stating: a native reasoner may use nearly the
+# whole cap while a JVM reasoner gives up a fixed ~2 GiB, and a JVM `failed` can mean
+# "could not reserve address space" rather than "ran out".
 # CONSEQUENCE FOR THE CONTRACT, which must be stated rather than glossed: under one
 # address-space cap a native reasoner may use nearly all of it as heap while a JVM
 # reasoner gets roughly cap-2GiB. The memory contract is NOT uniform across the two.
 if [ -n "${HARNESS_MEM_MB:-}" ]; then
-  XMX="$(( HARNESS_MEM_MB / 2 ))m"
+  XMX="$(( HARNESS_MEM_MB > 3072 ? HARNESS_MEM_MB - 2048 : HARNESS_MEM_MB / 2 ))m"
 else
   XMX="${OWLAPI_XMX:-12g}"
 fi
@@ -69,4 +80,6 @@ VJ="$(cd "$(dirname "$0")/../vendor" 2>/dev/null && pwd)"
 [ -x "$VJ/jdk/bin/java" ] && PATH="$VJ/jdk/bin:$PATH"
 [ -x "$VJ/jdkhome/bin/java" ] && PATH="$VJ/jdkhome/bin:$PATH"
 JT="${RAYON_NUM_THREADS:-4}"
-exec java -XX:ActiveProcessorCount=${JT} -Xmx${XMX} -Dfile.encoding=UTF-8 -cp "$JAR:$DIR" ReasonerCli jfact "$1" "$out"
+# Trim the 1 GiB default class-space RESERVATION; 256m is ample for these
+# reasoners and buys a full GiB of heap back under the same cap.
+exec java -XX:ActiveProcessorCount=${JT} -XX:CompressedClassSpaceSize=256m -Xmx${XMX} -Dfile.encoding=UTF-8 -cp "$JAR:$DIR" ReasonerCli jfact "$1" "$out"
