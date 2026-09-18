@@ -42,6 +42,7 @@ import org.semanticweb.owlapi.reasoner.Node;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
+import org.semanticweb.owlapi.reasoner.InconsistentOntologyException;
 import org.semanticweb.owlapi.reasoner.UnsupportedEntailmentTypeException;
 
 public final class ReasonerCli {
@@ -77,6 +78,24 @@ public final class ReasonerCli {
     }
   }
 
+  /** Every named class is unsatisfiable: the taxonomy of an inconsistent ontology. */
+  private static void writeInconsistent(OWLOntology onto, File out) throws Exception {
+    File parent = out.getParentFile();
+    if (parent != null) {
+      parent.mkdirs();
+    }
+    try (PrintWriter w = new PrintWriter(out, "UTF-8")) {
+      StringBuilder sb = new StringBuilder(
+          "EquivalentClasses( <http://www.w3.org/2002/07/owl#Nothing>");
+      for (OWLClass c : onto.getClassesInSignature()) {
+        if (!c.isOWLNothing() && !c.isOWLThing()) {
+          sb.append(" <").append(c.getIRI()).append(">");
+        }
+      }
+      w.println(sb.append(" )"));
+    }
+  }
+
   private static void run(String which, File in, File out) throws Exception {
     OWLOntologyManager m = OWLManager.createOWLOntologyManager();
     OWLOntology onto = m.loadOntologyFromOntologyDocument(in);
@@ -99,7 +118,20 @@ public final class ReasonerCli {
     }
 
     OWLReasoner r = factory.createReasoner(onto);
-    r.precomputeInferences(InferenceType.CLASS_HIERARCHY);
+    try {
+      r.precomputeInferences(InferenceType.CLASS_HIERARCHY);
+    } catch (InconsistentOntologyException e) {
+      // AN INCONSISTENT ONTOLOGY IS AN ANSWER, NOT A FAILURE. OWLAPI signals it by
+      // throwing, and letting that reach the generic handler exited non-zero -- so the
+      // harness recorded 139 correct verdicts across three arms as `failed`, including
+      // EVERY ONE of ELK's 22. Konclude, rustdl and KM all report inconsistency as a
+      // result, so scoring it as a crash also made the arms incomparable.
+      //
+      // In an inconsistent KB every class is unsatisfiable, which is exactly what the
+      // owl:Nothing equivalence group expresses; emit that and exit 0.
+      writeInconsistent(onto, out);
+      return;
+    }
 
     File parent = out.getParentFile();
     if (parent != null) {
