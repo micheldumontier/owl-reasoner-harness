@@ -223,7 +223,13 @@ def parse_owx(path: str, reasoner: str = "konclude") -> Normalised:
     the closure and the diff would be wrong.
     """
     n = Normalised(source=path, reasoner=reasoner)
-    tree = ET.parse(path)
+    # Read through _open so a .gz output parses too. ElementTree.parse() takes a
+    # path and would open it itself, bypassing the gzip handling every other parser
+    # in this file goes through -- which made compressed Konclude output unreadable
+    # while the line-based formats worked, so the transparency was only ever verified
+    # on those.
+    with _open(path) as _fh:
+        tree = ET.parse(_fh)
     root = tree.getroot()
 
     def tag(e) -> str:
