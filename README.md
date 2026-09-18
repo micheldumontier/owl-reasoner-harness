@@ -29,12 +29,14 @@ thread pin and the corpus. `setup.sh` needs no root and installs nothing system-
 `setup.sh` reads **`reasoners.lock`** — one row per artifact per platform, each with a
 sha256 that is **verified after download**; a mismatch aborts rather than proceeding,
 since the point of pinning is knowing which binary produced a number. It fetches
-rustdl, Konclude, robot.jar (HermiT + ELK + FaCT++/JFact) and a JDK, needs no root,
-and redistributes nothing — `vendor/` is gitignored.
+rustdl, Kobayashi-MaRust, Konclude, robot.jar (HermiT + ELK + FaCT++/JFact) and a JDK,
+needs no root, and redistributes nothing — `vendor/` is gitignored.
 
-**You supply**: the corpus (any directory of `.owl`/`.ofn`), and a KM binary if you
-have one (KM publishes none). To measure your own rustdl build instead of the pinned
-one, `export MISSED_NET_RUSTDL=/path/to/rustdl`.
+**You supply the corpus** — any directory of `.owl`/`.ofn` files. Not every reasoner
+publishes a build for every platform; `./setup.sh --check` says which rows apply to
+your host and what is left for you to provide. To measure your own build of a reasoner
+rather than the pinned one, point the corresponding wrapper at it (for rustdl,
+`export MISSED_NET_RUSTDL=/path/to/rustdl`).
 
 Changing a pin changes your results — a different `robot.jar` bundles different
 HermiT/ELK/JFact versions. Bump a row deliberately and re-baseline anything you cite.
@@ -48,30 +50,31 @@ published.
 reasoner can exit 0 having printed nothing.
 
 **A wrapper must not end in a pipe.** A pipeline returns the *last* command's status,
-so `reasoner | tee out` reports `tee`'s success. That masked **22 KM failures as `ok`**
-until the wrappers gained `set -o pipefail` — and it must be `bash`, since `dash`
+so `reasoner | tee out` reports `tee`'s success and a crashed reasoner is recorded as
+`ok`. Wrappers use `set -o pipefail`, and must invoke it through `bash` — `dash`
 rejects `pipefail` and would fail every case instead.
 
 **Four outcomes, not three.** `answered` / `timeout` / **`declined`** / `failed`. A
 reasoner refusing a construct it never claimed to support (SWRL, an inverse role in a
 chain) is behaving correctly; pooling that with crashes reports honesty as failure.
 
-**"Answered" is not "correct".** In one pilot KM answered 22 of 24 ontologies and was
-short 776 entailments while Konclude answered 23 and was short none. Ranking on
-completion counts orders those two backwards. Correctness is adjudicated separately,
-against the agreement of independent reasoners, with contested ontologies *excluded*
-rather than resolved by majority — a contested oracle is not an oracle.
+**"Answered" is not "correct".** A reasoner can exit 0 with a partial answer, so
+ranking on completion counts can order two reasoners the opposite way from ranking on
+entailments found. Correctness is adjudicated separately, against the agreement of
+independent reasoners, with contested ontologies *excluded* rather than resolved by
+majority — a contested oracle is not an oracle.
 
 **Compare normalised closures, never raw rows.** Expand equivalence groups, filter
-internal definers (`Q_*`, `DKey`), and exclude both unsatisfiable classes and
-`⊤`-implied rows on all sides. Skipping the last one made two reasoners that agree
-exactly look like they differed by **59,694 pairs**.
+internal definers, and exclude both unsatisfiable classes and `⊤`-implied rows on all
+sides. Reasoners differ on whether to emit rows implied by an asserted `⊤ ⊑ C`; on an
+ontology with such an axiom, comparing raw output can make two reasoners that agree
+exactly appear to differ by tens of thousands of pairs.
 
-**The resource contract is part of the answer.** KM returns 479 subsumptions under a
-20 GB cap and 474 under 48 GB — deterministic, both exiting 0. Two labs running one
-binary on one file under different limits get different closures, silently. So the
-contract is recorded, and where a platform cannot enforce it the run says so instead
-of implying it held.
+**The resource contract is part of the answer.** A reasoner's output can differ under
+different resource limits — deterministically, with both runs exiting 0 — so two sites
+running one binary on one file under different caps can get different closures,
+silently. The contract is therefore recorded with every run, and where a platform
+cannot enforce it the run says so instead of implying it held.
 
 ## Reading the results
 
@@ -97,17 +100,36 @@ arm (`scripts/compress-run-output.sh`) — never by piping the reasoner through 
 * **Konclude's Linux static build needs `libpcre.so.3`** (PCRE1). Install the real
   `libpcre3`; do **not** symlink PCRE2 — an ABI mismatch could corrupt oracle output,
   which is worse than no oracle.
-* **`ulimit -v` caps address space, and the JVM reserves its whole heap up front.**
-  `-Xmx12g` under a 9 GiB cap does not spill, it refuses to boot. The JVM wrappers
-  size `-Xmx` from the cap and pin `-XX:ActiveProcessorCount` to the same thread
-  count as the native reasoners; without the latter, GC threads exhausted the address
-  space and ELK failed ~1 run in 5 **silently, with no error text**.
-  Consequence: under one cap a native reasoner gets nearly all of it and a JVM
-  reasoner about half. That asymmetry is real and must be stated, not averaged away.
-* **`--mem-mb` is a no-op on macOS**, which has no `RLIMIT_AS`.
+* **`--mem-mb` caps ADDRESS SPACE, not memory used, and that distinction is not
+  cosmetic.** It is implemented with `ulimit -v` (`RLIMIT_AS`), which bounds what a
+  process *reserves*. Reservations track real use closely for a single-threaded native
+  reasoner and barely at all for a threaded one: every thread stack is a reservation,
+  and a runtime may reserve a heap or class space far larger than it commits. A
+  reasoner using tens of megabytes of RSS can therefore be refused by a multi-gigabyte
+  cap, and the failure surfaces as a spawn error or an allocation abort rather than
+  anything resembling "out of memory".
+
+  Consequences to design around, not work around:
+  - **A threaded reasoner is penalised relative to a single-threaded one** under the
+    same cap, for reasons unrelated to how much memory either uses.
+  - **The JVM wrappers compensate explicitly** — `-Xmx` is sized from the cap (a fixed
+    ~2 GiB of reservations, so the share grows as the cap does),
+    `-XX:CompressedClassSpaceSize` is trimmed from its 1 GiB default, and
+    `-XX:ActiveProcessorCount` is pinned to the harness thread count. Without the last
+    of these, GC thread stacks exhaust the address space and the JVM fails to start
+    intermittently, **silently, with no error text**.
+  - **Prefer a cgroup memory limit if your host offers one**, since that bounds actual
+    usage. `RLIMIT_RSS` is not an option — Linux ignores it — and `systemd-run --user`
+    needs a session bus that many containers lack.
+  - If a cap is small enough to matter, check that a rejection is real before reporting
+    it: compare the recorded `peak_rss_kb` against the cap, and look at the captured
+    stderr.
+* **`--mem-mb` is a no-op on macOS**, which has no `RLIMIT_AS`; such a run records
+  memory as unenforced rather than implying the cap held.
 * **Wall from a parallel run is not reportable.** Contention manufactures false
-  timeouts, and an intermittent 2x penalty was measured on one reasoner from nothing
-  but which arm ran immediately before it. Run correctness in parallel and timing
+  timeouts, and a reasoner's wall can shift substantially depending on which arm ran
+  immediately before it — rotating arm order does not fix this, since each arm still
+  gets a different neighbour on every pass. Run correctness in parallel and timing
   sequentially on an idle host.
 * **`robot.jar` versions bundle different reasoner versions.** Compare the sha256
   across hosts, never the filename.
