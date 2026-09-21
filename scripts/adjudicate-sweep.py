@@ -13,7 +13,7 @@ bound, not a wrong answer), DIFF (emitted a pair gold does not contain), n/a (ne
 answered), and total FP / MISSED pairs.
 """
 import json, glob, os, sys, collections, re, importlib.util
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 _here = os.path.dirname(os.path.abspath(__file__))
 spec = importlib.util.spec_from_file_location(
@@ -29,7 +29,10 @@ EXT = {"rustdl": ".out", "km130": ".json", "km140": ".json", "konclude": ".owx",
        "hermit": ".ofn", "elk": ".ofn", "jfact": ".ofn"}
 REF = os.environ.get("REFS", "konclude,hermit").split(",")
 ARMS = os.environ.get("ARMS", "rustdl,km130,km140,konclude,hermit,elk").split(",")
-CAP = int(os.environ.get("CLOSURE_CAP", "20000000"))
+# 20M pairs was far too generous: the p99 closure is orders of magnitude smaller, so
+# the cap almost never bit and a single dense ontology could occupy a worker for hours.
+CAP = int(os.environ.get("CLOSURE_CAP", "3000000"))
+CKPT = os.environ.get("CHECKPOINT")   # append per-ontology results as they land
 
 
 def outcomes(a):
@@ -75,6 +78,33 @@ def universal(ont):
     return out
 
 
+def i_of(x, ids):
+    v = ids.get(x)
+    if v is None:
+        v = ids[x] = len(ids)
+    return v
+
+
+def _expand(up, ont, ids):
+    """Transitive closure of a direct-pair graph, minus TOP-implied rows."""
+    u = {ids[x] for x in universal(ont) if x in ids}
+    full = set()
+    for x in list(up):
+        seen, st = set(), list(up[x])
+        while st:
+            y = st.pop()
+            if y in seen:
+                continue
+            seen.add(y)
+            st.extend(up.get(y, ()))
+        for y in seen:
+            if y not in u:
+                full.add((x, y))
+        if len(full) > CAP:
+            return "OVERSIZED"
+    return full
+
+
 def closure(arm, ont, answered, ids):
     """Transitive closure as (int,int) pairs.
 
@@ -92,6 +122,21 @@ def closure(arm, ont, answered, ids):
     Past CAP pairs the ontology is abandoned as OVERSIZED rather than adjudicated. An
     honest exclusion beats an unbounded run.
     """
+    # Prefer the cached normalisation (scripts/normalise-arm.py) over re-parsing the
+    # raw output: taxonomies run to 100+ MB, and re-scoring under changed rules used
+    # to pay the full parse again every time. Falls back to raw when no cache exists,
+    # so an older sweep still scores.
+    cache = "%s/norm/%s/%s.tsv.gz" % (SW, arm, ont)
+    if os.path.exists(cache):
+        import gzip as _gz
+        up = collections.defaultdict(set)
+        with _gz.open(cache, "rt", encoding="utf-8") as fh:
+            for line in fh:
+                t = line.rstrip("\n").split("\t")
+                if len(t) == 2:
+                    up[i_of(t[0], ids)].add(i_of(t[1], ids))
+        return _expand(up, ont, ids)
+
     p = "%s/out/%s/%s%s" % (SW, arm, ont, EXT[arm])
     for cand in (p, p + ".gz"):
         if not os.path.exists(cand):
@@ -154,27 +199,59 @@ def job(ont):
 
 
 if __name__ == "__main__":
-    onts = sorted(OC["konclude"])
+    onts = sorted(OC[REF[0]])
+    done_already = {}
+    if CKPT and os.path.exists(CKPT):
+        # RESUME. Results used to live only in the driver's memory, so a crash or a
+        # kill discarded every hour of work; each ontology is now appended as it lands.
+        for line in open(CKPT):
+            try:
+                r = json.loads(line)
+            except Exception:
+                continue
+            done_already[r["ont"]] = r
+        print("resuming: %d ontologies already scored" % len(done_already), flush=True)
+    todo = [o for o in onts if o not in done_already]
+
     agg = {a: collections.Counter() for a in ARMS}
     fp = {a: 0 for a in ARMS}
     miss = {a: 0 for a in ARMS}
-    gold = cont = noref = over = done = 0
-    with ProcessPoolExecutor(max_workers=int(os.environ.get("W", "3"))) as ex:
-        for ont, kind, res in ex.map(job, onts, chunksize=4):
+    gold = cont = noref = over = 0
+
+    def tally(rec):
+        global gold, cont, noref, over
+        k = rec["kind"]
+        if k == "gold":
+            gold += 1
+            for a, v in rec["res"].items():
+                agg[a][v[0]] += 1; fp[a] += v[1]; miss[a] += v[2]
+        elif k == "contested": cont += 1
+        elif k == "oversized": over += 1
+        else: noref += 1
+
+    for rec in done_already.values():
+        tally(rec)
+
+    ck = open(CKPT, "a") if CKPT else None
+    done = len(done_already)
+    with ProcessPoolExecutor(max_workers=int(os.environ.get("W", "10"))) as ex:
+        # as_completed, NOT map: map yields in submission order, so one expensive
+        # ontology blocks every result behind it and the other workers idle. That is
+        # what took a run to 125 of 1920 in 3.5 hours at load 1.0 on a 16-CPU box.
+        futs = {ex.submit(job, o): o for o in todo}
+        for f in as_completed(futs):
+            ont, kind, res = f.result()
+            rec = {"ont": ont, "kind": kind, "res": res}
+            tally(rec)
+            if ck:
+                ck.write(json.dumps(rec) + "\n"); ck.flush()
             done += 1
-            if kind == "gold":
-                gold += 1
-                for a, (k, e, m) in res.items():
-                    agg[a][k] += 1; fp[a] += e; miss[a] += m
-            elif kind == "contested":
-                cont += 1
-            elif kind == "oversized":
-                over += 1
-            else:
-                noref += 1
             if done % 25 == 0:
                 print("  ...%d/%d  gold=%d contested=%d oversized=%d"
                       % (done, len(onts), gold, cont, over), flush=True)
+    if ck:
+        ck.close()
+
     print("\ngold=%d contested=%d no-reference=%d oversized=%d  (of %d)"
           % (gold, cont, noref, over, len(onts)))
     print("%-9s %7s %6s %6s %6s %12s %12s"
