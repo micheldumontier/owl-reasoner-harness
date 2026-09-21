@@ -18,3 +18,5 @@ tests/__pycache__/
 
 # KM is user-supplied and platform-specific; see setup.sh
 /bin/km-*
+
+.DS_Store
