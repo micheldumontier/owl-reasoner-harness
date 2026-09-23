@@ -97,6 +97,12 @@ def _expand(up, ont, ids):
                 continue
             seen.add(y)
             st.extend(up.get(y, ()))
+            # CHECK INSIDE THE WALK, not only after it. Checking per-node let a single
+            # node with a huge reachable set grow `seen` unbounded before the cap was
+            # ever consulted -- which OOM-killed a worker and took the whole pool with
+            # it (BrokenProcessPool), twice, losing every unwritten result.
+            if len(full) + len(seen) > CAP:
+                return "OVERSIZED"
         for y in seen:
             if y not in u:
                 full.add((x, y))
