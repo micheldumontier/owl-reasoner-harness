@@ -54,13 +54,21 @@ _univ = {}
 
 def universal(ont):
     """Classes X with an asserted TOP <= X: trivially true of every class, so excluded
-    on all sides, exactly as unsatisfiable classes are."""
+    on all sides, exactly as unsatisfiable classes are.
+
+    STREAMED LINE BY LINE, deliberately. Reading the ontology whole cost a worker as
+    much memory as the file -- and the corpus holds 526 MB, 450 MB and 333 MB inputs,
+    so a handful of workers on large files exhausted the box and the OOM killer took
+    one, which broke the whole process pool and stalled the run three times. The
+    axioms matched here never span lines in this corpus's functional syntax.
+    """
     if ont in _univ:
         return _univ[ont]
-    txt = open("%s/%s.owl" % (POOL, ont), encoding="utf-8", errors="replace").read()
-    pfx = dict(re.findall(r"Prefix\(\s*([A-Za-z0-9_.-]*):=<([^>]*)>\s*\)", txt))
     T = "http://www.w3.org/2002/07/owl#Thing"
+    pfx = {}
     out = set()
+    pre_re = re.compile(r"Prefix\(\s*([A-Za-z0-9_.-]*):=<([^>]*)>\s*\)")
+    sub_re = re.compile(r"SubClassOf\(\s*(\S+)\s+(\S+?)\s*\)")
 
     def ex(t):
         t = t.strip()
@@ -71,9 +79,17 @@ def universal(ont):
             return pfx[p] + l if p in pfx else None
         return None
 
-    for m in re.finditer(r"SubClassOf\(\s*(\S+)\s+(\S+?)\s*\)", txt):
-        if ex(m.group(1)) == T and ex(m.group(2)):
-            out.add(ex(m.group(2)))
+    with open("%s/%s.owl" % (POOL, ont), encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            if "Prefix(" in line:
+                for m in pre_re.finditer(line):
+                    pfx[m.group(1)] = m.group(2)
+            if "SubClassOf(" in line:
+                for m in sub_re.finditer(line):
+                    if ex(m.group(1)) == T:
+                        b = ex(m.group(2))
+                        if b:
+                            out.add(b)
     _univ[ont] = out
     return out
 
