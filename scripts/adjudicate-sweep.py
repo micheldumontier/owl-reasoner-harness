@@ -152,11 +152,20 @@ def closure(arm, ont, answered, ids):
     if os.path.exists(cache):
         import gzip as _gz
         up = collections.defaultdict(set)
+        n = 0
         with _gz.open(cache, "rt", encoding="utf-8") as fh:
             for line in fh:
                 t = line.rstrip("\n").split("\t")
                 if len(t) == 2:
                     up[i_of(t[0], ids)].add(i_of(t[1], ids))
+                    n += 1
+                    # BOUND THE INPUT GRAPH, not just the closure. Capping only the
+                    # closure still let a dense arm load millions of DIRECT pairs
+                    # before the walk began: four workers reached 57 GB of 65 and the
+                    # run stalled with no result written. The closure of a graph this
+                    # size would exceed CAP anyway, so refusing early loses nothing.
+                    if n > CAP:
+                        return "OVERSIZED"
         return _expand(up, ont, ids)
 
     p = "%s/out/%s/%s%s" % (SW, arm, ont, EXT[arm])
@@ -176,8 +185,12 @@ def closure(arm, ont, answered, ids):
             return v
 
         up = collections.defaultdict(set)
+        _n = 0
         for a_, b_ in n.pairs():
             up[i(a_)].add(i(b_))
+            _n += 1
+            if _n > CAP:
+                return "OVERSIZED"
         u = {ids[x] for x in universal(ont) if x in ids}
         full = set()
         for x in list(up):
