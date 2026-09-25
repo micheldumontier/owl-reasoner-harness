@@ -12,8 +12,9 @@ Reports, per arm: MATCH (closure equals gold), part (a sound SUBSET of gold -- a
 bound, not a wrong answer), DIFF (emitted a pair gold does not contain), n/a (never
 answered), and total FP / MISSED pairs.
 """
-import json, glob, os, sys, collections, re, importlib.util
+import json, glob, os, sys, collections, re, importlib.util, resource
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures.process import BrokenProcessPool
 
 _here = os.path.dirname(os.path.abspath(__file__))
 spec = importlib.util.spec_from_file_location(
@@ -210,7 +211,36 @@ def closure(arm, ont, answered, ids):
     return set() if answered else None
 
 
+WORKER_MEM_GB = float(os.environ.get("WORKER_MEM_GB", "6"))
+
+
+def _limit_worker_memory():
+    """Cap each WORKER's address space so a runaway job dies ALONE.
+
+    Without this a single pathological ontology exhausted the box and the OOM killer
+    took a worker, which broke the whole process pool and discarded every in-flight
+    result -- four times in one run, each time on a different ontology. Bounding the
+    worker converts that into a MemoryError this process catches and reports as
+    OVERSIZED, so the run continues instead of dying.
+
+    This is RLIMIT_AS on OUR OWN scoring processes -- unrelated to the reasoners under
+    test, which are measured elsewhere and must not be capped this way.
+    """
+    b = int(WORKER_MEM_GB * (1 << 30))
+    try:
+        resource.setrlimit(resource.RLIMIT_AS, (b, b))
+    except (ValueError, OSError):
+        pass          # not enforceable here (e.g. macOS); the run still works
+
+
 def job(ont):
+    try:
+        return _job(ont)
+    except MemoryError:
+        return (ont, "oversized", None)
+
+
+def _job(ont):
     ids = {}          # ONE map per ontology, shared by every arm
     cl = {r: closure(r, ont, OC[r].get(ont) == "ok", ids) for r in REF}
     if any(c == "OVERSIZED" for c in cl.values()):
@@ -269,21 +299,48 @@ if __name__ == "__main__":
 
     ck = open(CKPT, "a") if CKPT else None
     done = len(done_already)
-    with ProcessPoolExecutor(max_workers=int(os.environ.get("W", "10"))) as ex:
-        # as_completed, NOT map: map yields in submission order, so one expensive
-        # ontology blocks every result behind it and the other workers idle. That is
-        # what took a run to 125 of 1920 in 3.5 hours at load 1.0 on a 16-CPU box.
-        futs = {ex.submit(job, o): o for o in todo}
-        for f in as_completed(futs):
-            ont, kind, res = f.result()
-            rec = {"ont": ont, "kind": kind, "res": res}
-            tally(rec)
-            if ck:
-                ck.write(json.dumps(rec) + "\n"); ck.flush()
-            done += 1
-            if done % 25 == 0:
-                print("  ...%d/%d  gold=%d contested=%d oversized=%d"
-                      % (done, len(onts), gold, cont, over), flush=True)
+
+    def drain(batch):
+        """Score one batch, surviving a pool death.
+
+        Even with per-worker limits a pool can break (a hard kill, an allocation the
+        limit cannot intercept). Losing the pool must not lose the RUN: the batch is
+        retried once with a single worker, which isolates the offender, and anything
+        still unscored is left for the next resume rather than silently dropped.
+        """
+        nonlocal done
+        for workers in (int(os.environ.get("W", "10")), 1):
+            try:
+                with ProcessPoolExecutor(max_workers=workers,
+                                         initializer=_limit_worker_memory) as ex:
+                    futs = {ex.submit(job, o): o for o in batch}
+                    for f in as_completed(futs):
+                        ont, kind, res = f.result()
+                        rec = {"ont": ont, "kind": kind, "res": res}
+                        tally(rec)
+                        if ck:
+                            ck.write(json.dumps(rec) + "\n"); ck.flush()
+                        done += 1
+                        if done % 25 == 0:
+                            print("  ...%d/%d  gold=%d contested=%d oversized=%d"
+                                  % (done, len(onts), gold, cont, over), flush=True)
+                return
+            except BrokenProcessPool:
+                scored = set()
+                if CKPT and os.path.exists(CKPT):
+                    for line in open(CKPT):
+                        try:
+                            scored.add(json.loads(line)["ont"])
+                        except Exception:
+                            pass
+                batch = [o for o in batch if o not in scored]
+                print("  pool died; retrying %d remaining with 1 worker" % len(batch),
+                      flush=True)
+    # batches keep a pool death from costing the whole remaining run
+    B = int(os.environ.get("BATCH", "100"))
+    for k in range(0, len(todo), B):
+        drain(todo[k:k + B])
+
     if ck:
         ck.close()
 
