@@ -308,7 +308,7 @@ if __name__ == "__main__":
         retried once with a single worker, which isolates the offender, and anything
         still unscored is left for the next resume rather than silently dropped.
         """
-        nonlocal done
+        global done
         for workers in (int(os.environ.get("W", "10")), 1):
             try:
                 with ProcessPoolExecutor(max_workers=workers,
