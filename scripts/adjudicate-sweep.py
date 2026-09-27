@@ -121,7 +121,11 @@ def _expand(up, ont, ids):
             if len(full) + len(seen) > CAP:
                 return "OVERSIZED"
         for y in seen:
-            if y not in u:
+            # DROP REFLEXIVE PAIRS. normalise.py's R3 drops X <= X at normalisation,
+            # but transitive expansion RE-CREATES them from equivalence cycles, so the
+            # rule has to be applied here too. Left in, they inflate every arm's FP
+            # count -- ~3% of one arm's deltas, small but pure noise.
+            if y != x and y not in u:
                 full.add((x, y))
         if len(full) > CAP:
             return "OVERSIZED"
