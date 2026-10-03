@@ -109,6 +109,18 @@ That is the only confirmed unsound inference across 7 arms and 1,920 ontologies.
 has 17 `DIFF` ontologies, 9 of them missed inconsistencies, so at most 8 are affected;
 one was verified.
 
+**Reproduce** (added 2026-10-03, once the probe moved into the repo):
+
+```sh
+SWEEP_DIR=... CORPUS=... python3 scripts/settle-pairs.py jfact ore_ont_15655 --n 3
+SWEEP_DIR=... CORPUS=... python3 scripts/settle-pairs.py km130 ore_ont_14861 --n 3
+```
+
+A fresh sample of different pairs gave the same verdicts: JFact 3/3 `NOT_ENTAILED`,
+KM 3/3 `ENTAILED`, with both controls passing on each ontology. Two deliberate
+sabotages of the script, never writing the probe axiom and restoring the
+any-`owl:Nothing` criterion, each came back `INSTRUMENT_INVALID` with no verdicts.
+
 ## ELK's deviations are a profile limit, not unsoundness
 
 **29 of ELK's 33 DIFFs are missed inconsistencies.** On those ontologies Konclude and

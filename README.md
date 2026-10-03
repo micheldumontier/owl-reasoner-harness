@@ -64,6 +64,24 @@ entailments found. Correctness is adjudicated separately, against the agreement 
 independent reasoners, with contested ontologies *excluded* rather than resolved by
 majority — a contested oracle is not an oracle.
 
+**Agreement is not proof, and a DIFF is a lead, not a verdict.** Reference reasoners
+can share a blind spot: where they omit the *same* entailments the ontology is never
+flagged contested, and an arm that derives them is scored with false positives for
+being more complete. Majority does not help when the omission is correlated. Settle a
+disputed pair with `scripts/settle-pairs.py`, which asks a complete reasoner about
+that one pair and validates itself on every ontology before its verdicts count:
+
+```sh
+SWEEP_DIR=... CORPUS=... python3 scripts/settle-pairs.py ARM ONT [ONT ...] \
+    [--ref konclude] [--n 5] [--direction extra|missed] [--out settled.jsonl]
+```
+
+`extra` asks about pairs the arm derives and the reference does not; `missed` the
+reverse. Each pair is `ENTAILED`, `NOT_ENTAILED` or `INCONCLUSIVE`; an ontology whose
+positive and negative controls do not both come out as expected is reported
+`INSTRUMENT_INVALID` and contributes no verdicts. It costs one full classification per
+pair, so sample rather than sweep.
+
 **Compare normalised closures, never raw rows.** Expand equivalence groups, filter
 internal definers, and exclude both unsatisfiable classes and `⊤`-implied rows on all
 sides. Reasoners differ on whether to emit rows implied by an asserted `⊤ ⊑ C`; on an
@@ -140,7 +158,9 @@ arm (`scripts/compress-run-output.sh`) — never by piping the reasoner through 
 src/            runner, reporter, comparator
 wrappers/       one per reasoner; env-overridable, defaulting to ./vendor
 java/           ReasonerCli — OWLAPI driver for HermiT, ELK, FaCT++/JFact
-scripts/        normalise.py (the one to read), plus historical one-offs that
+scripts/        normalise.py (the one to read); adjudicate-sweep.py (score arms
+                against an agreement gold); settle-pairs.py (decide a disputed
+                pair with a complete reasoner); plus historical one-offs that
                 still carry absolute paths from the machine they were written on
 docs/           setup notes and benchmark write-ups, including what was retracted
 baselines/      reference runs whose numbers are cited elsewhere

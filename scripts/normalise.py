@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cross-reasoner subsumption normaliser + FP/MISSED comparator.
+r"""Cross-reasoner subsumption normaliser + FP/MISSED comparator.
 
 Four reasoners emit four incompatible shapes. This normalises each to a sorted set
 of `sub<TAB>sup` lines over NAMED classes so two runs can be diffed.
