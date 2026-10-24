@@ -308,14 +308,18 @@ def _open(path: str):
     gzip: a pipeline returns the LAST command's status, which is exactly how 22 KM
     failures were once recorded as successes.
 
-    A plain path whose file is absent falls back to `<path>.gz`, so a cache gzipped in
-    place (tidy.py, for the missed-net TSV caches) still reads under its plain name.
+    Any plain path whose file is absent falls back to `<path>.gz`. That is for the
+    missed-net TSV caches, which tidy.py gzips in place, but it applies to every input.
     """
     if path.endswith(".gz"):
         return _gzip.open(path, "rt", encoding="utf-8", errors="replace")
-    if not os.path.exists(path) and os.path.exists(path + ".gz"):
-        return _gzip.open(path + ".gz", "rt", encoding="utf-8", errors="replace")
-    return open(path, encoding="utf-8", errors="replace")
+    try:
+        return open(path, encoding="utf-8", errors="replace")
+    except FileNotFoundError:
+        # Gzipped in place, possibly between a caller's existence check and now.
+        if os.path.exists(path + ".gz"):
+            return _gzip.open(path + ".gz", "rt", encoding="utf-8", errors="replace")
+        raise
 
 
 def parse_hermit(path: str) -> Normalised:

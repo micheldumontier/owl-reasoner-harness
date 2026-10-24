@@ -411,9 +411,13 @@ def ensure_normalised(arm: str, fmt: str, ont: str) -> pathlib.Path | None:
     dest = normalised_path(arm, ont)
     # The cache may have been gzipped in place (tidy.py; gzip keeps the mtime). Check
     # freshness on whichever copy exists, the plain one first; a rebuild writes plain.
-    cached = dest if dest.exists() else dest.with_name(dest.name + ".gz")
-    if cached.exists() and cached.stat().st_mtime >= raw.stat().st_mtime:
-        return cached
+    for cached in (dest, dest.with_name(dest.name + ".gz")):
+        try:
+            if cached.stat().st_mtime >= raw.stat().st_mtime:
+                return cached
+            break  # a stale plain cache is rebuilt, never shadowed by an older .gz
+        except FileNotFoundError:
+            continue
     dest.parent.mkdir(parents=True, exist_ok=True)
     n = normalise.normalise_file(fmt, str(raw), None)
     prune_inert_unsat_edges(n)
