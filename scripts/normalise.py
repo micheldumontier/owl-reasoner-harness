@@ -165,7 +165,7 @@ class Normalised:
 
 
 def read_normalised(path: str) -> Normalised:
-    """Read back a file written by `write`."""
+    """Read back a file written by `write`, plain or gzipped (see `_open`)."""
     n = Normalised(source=path)
     with _open(path) as fh:
         for line in fh:
@@ -307,9 +307,14 @@ def _open(path: str):
     Compression happens AFTER an arm finishes, never by piping the reasoner through
     gzip: a pipeline returns the LAST command's status, which is exactly how 22 KM
     failures were once recorded as successes.
+
+    A plain path whose file is absent falls back to `<path>.gz`, so a cache gzipped in
+    place (tidy.py, for the missed-net TSV caches) still reads under its plain name.
     """
     if path.endswith(".gz"):
         return _gzip.open(path, "rt", encoding="utf-8", errors="replace")
+    if not os.path.exists(path) and os.path.exists(path + ".gz"):
+        return _gzip.open(path + ".gz", "rt", encoding="utf-8", errors="replace")
     return open(path, encoding="utf-8", errors="replace")
 
 
