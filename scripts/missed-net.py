@@ -66,6 +66,14 @@ CORPUS = pathlib.Path(
 
 FRAGMENTS = ("pure-EL", "Horn", "out-of-EL")
 
+#: The scorer reads a cached `tsv/<arm>/<ont>.tsv` OR its gzipped `<ont>.tsv.gz` (the
+#: plain file wins when both exist; the freshness check runs on whichever exists), via
+#: `normalise._open`. ~/rustdl/tools/tidy.py reads this line: it gzips idle
+#: TSV caches in place only while it says True. Verified 2026-10-24 by scoring the
+#: 400-ontology arm plain, gzipping a copy of every tsv dir, and re-scoring:
+#: byte-identical per-ontology JSONL and summary.
+TSV_GZ = True
+
 
 # ── manifest ────────────────────────────────────────────────────────────────
 
@@ -401,8 +409,15 @@ def ensure_normalised(arm: str, fmt: str, ont: str) -> pathlib.Path | None:
     if not raw.exists() or raw.stat().st_size == 0:
         return None
     dest = normalised_path(arm, ont)
-    if dest.exists() and dest.stat().st_mtime >= raw.stat().st_mtime:
-        return dest
+    # The cache may have been gzipped in place (tidy.py; gzip keeps the mtime). Check
+    # freshness on whichever copy exists, the plain one first; a rebuild writes plain.
+    for cached in (dest, dest.with_name(dest.name + ".gz")):
+        try:
+            if cached.stat().st_mtime >= raw.stat().st_mtime:
+                return cached
+            break  # a stale plain cache is rebuilt, never shadowed by an older .gz
+        except FileNotFoundError:
+            continue
     dest.parent.mkdir(parents=True, exist_ok=True)
     n = normalise.normalise_file(fmt, str(raw), None)
     prune_inert_unsat_edges(n)

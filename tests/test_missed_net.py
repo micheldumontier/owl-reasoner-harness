@@ -339,3 +339,43 @@ def test_prune_keeps_an_excluded_to_excluded_edge_that_is_on_a_live_path(tmp_pat
     dropped = mn.prune_inert_unsat_edges(n)
     assert dropped == 0, dropped
     assert n.pairs() == before
+
+
+# ── gzipped caches (tidy.py) ────────────────────────────────────────────────
+
+
+def test_gzipped_caches_rescore_identically_without_rebuilding(tmp_path, monkeypatch):
+    """`TSV_GZ = True` is a claim tidy.py acts on: a cache gzipped in place (gzip -1,
+    which keeps the mtime and removes the plain file) must be READ, not rebuilt, and
+    the score must not change."""
+    import gzip
+    import os
+    import shutil
+
+    mn = _mn(tmp_path)
+    assert mn.TSV_GZ is True
+    ont = "g1"
+    _write(
+        tmp_path,
+        ont,
+        kon=_owx([(A, B), (B, C)]),
+        her=_hermit([(A, B), (B, C)]),
+        arm=_rustdl([(A, B)]),
+    )
+    cases = _cases([ont])
+    first = mn.one_ontology(ont, "ARM", cases, cases, cases)
+    for plain in sorted((tmp_path / "tsv").rglob("*.tsv")):
+        st = plain.stat()
+        gz = plain.with_name(plain.name + ".gz")
+        with plain.open("rb") as src, gzip.open(gz, "wb", compresslevel=1) as dst:
+            shutil.copyfileobj(src, dst)
+        os.utime(gz, ns=(st.st_atime_ns, st.st_mtime_ns))
+        plain.unlink()
+
+    def no_rebuild(*_a, **_k):
+        raise AssertionError("a fresh gzipped cache was rebuilt")
+
+    monkeypatch.setattr(mn.normalise, "normalise_file", no_rebuild)
+    assert mn.ensure_normalised("ARM", "rustdl", ont).name == f"{ont}.tsv.gz"
+    second = mn.one_ontology(ont, "ARM", cases, cases, cases)
+    assert second == first
