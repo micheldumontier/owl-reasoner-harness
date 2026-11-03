@@ -61,6 +61,10 @@ single-file normaliser cannot know the other side's unsat set, so it emits its o
 as machine-readable `#unsat` / `#thing-equiv` comment lines and `compare` takes the
 union. Data lines never start with `#`, so a consumer that only wants pairs can
 `grep -v '^#'`.
+
+The same exclusion hides a class the candidate WRONGLY calls unsatisfiable, so
+`compare` also diffs the two unsat sets and reports `unsat_FP` (candidate-only, a
+soundness failure that fails the CLI) and `unsat_MISSED` (oracle-only) separately.
 """
 
 from __future__ import annotations
@@ -107,10 +111,28 @@ class Normalised:
         self.thing_equiv: set[str] = set()
 
     def add_edge(self, s: str, t: str) -> None:
-        """Add a subsumption, applying the R3 Thing/Nothing/reflexive policy."""
+        """Add a subsumption, applying the R3 Thing/Nothing/reflexive policy.
+
+        `C ⊑ owl:Nothing` is the OWLAPI/ROBOT spelling of "C is unsatisfiable", so it
+        is recorded as unsat rather than dropped with the other special edges. Dropped,
+        a correct unsat class on the other side would read as an unsat FP. `owl:Thing ⊑
+        owl:Nothing` records Thing as unsat, which is how an inconsistent KB is marked
+        (the same as an `EquivalentClasses(owl:Thing, owl:Nothing, ...)` group).
+        """
+        if is_nothing(t) and not is_nothing(s):
+            self.unsat.add(s)
+            return
         if is_special(s) or is_special(t) or s == t:
             return
         self.edges.add((s, t))
+
+    def inconsistent(self) -> bool:
+        """True iff this answer says the KB is inconsistent (owl:Thing is unsat)."""
+        return any(is_thing(c) for c in self.unsat)
+
+    def unsat_classes(self) -> set[str]:
+        """The unsat set without the Thing/Nothing names used as markers."""
+        return {c for c in self.unsat if not is_special(c)}
 
     def add_equiv_group(self, members: list[str]) -> None:
         """Apply R4 to one equivalence group."""
@@ -339,12 +361,20 @@ def parse_hermit(path: str) -> Normalised:
 
 def parse_rustdl(path: str) -> Normalised:
     """rustdl `classify` stdout: `direct<TAB>sub<TAB>sup`, `equiv<TAB>a<TAB>b…`,
-    `unsat<TAB>iri`, plus `#`-prefixed banner lines."""
+    `unsat<TAB>iri`, plus `#`-prefixed banner lines.
+
+    An inconsistent KB has no Thing marker in the data lines (every class is listed
+    `unsat`), so the banner `# abox_check: inconsistent` is read as one. classify
+    prints it whenever it concluded inconsistency, from any source, not only the ABox
+    pre-check. Under `RUSTDL_ABOX_CHECK=0` the banner says `skipped` and the text
+    output then carries no inconsistency marker at all."""
     n = Normalised(source=path, reasoner="rustdl")
     with _open(path) as fh:
         for line in fh:
             line = line.rstrip("\n")
             if line.startswith("#"):
+                if line.strip() == "# abox_check: inconsistent":
+                    n.unsat.add(OWL_THING)
                 continue
             parts = line.split("\t")
             if parts[0] == "direct" and len(parts) == 3:
@@ -566,6 +596,11 @@ def compare(cand_path: str, oracle_path: str) -> dict:
     Exclusion is SYMMETRIC: the union of both sides' unsat and thing-equivalent
     classes is removed from both closures first, so a disagreement about
     satisfiability is reported as such instead of masquerading as thousands of FPs.
+
+    That exclusion also hides a class the candidate WRONGLY calls unsatisfiable (the
+    strongest false positive: it is subsumed by everything), so the unsat sets are
+    diffed separately, see `unsat_diff`. `FP` stays pairs only; `unsat_FP` is its own
+    key, and the CLI fails on either.
     """
     a = read_normalised(cand_path)
     b = read_normalised(oracle_path)
@@ -574,6 +609,7 @@ def compare(cand_path: str, oracle_path: str) -> dict:
     bc = b.restricted(exclude)
     fp = ac - bc
     missed = bc - ac
+    unsat_fp, unsat_missed = unsat_diff(a, b)
     return {
         "candidate": cand_path,
         "candidate_reasoner": a.reasoner,
@@ -583,11 +619,32 @@ def compare(cand_path: str, oracle_path: str) -> dict:
         "oracle_closure": len(bc),
         "excluded_classes": len(exclude),
         "unsat_disagreement": len(a.unsat ^ b.unsat),
+        "candidate_inconsistent": a.inconsistent(),
+        "oracle_inconsistent": b.inconsistent(),
         "FP": len(fp),
         "MISSED": len(missed),
+        "unsat_FP": len(unsat_fp),
+        "unsat_MISSED": len(unsat_missed),
         "fp_sample": [list(p) for p in sorted(fp)[:10]],
         "missed_sample": [list(p) for p in sorted(missed)[:10]],
+        "unsat_fp_sample": sorted(unsat_fp)[:10],
+        "unsat_missed_sample": sorted(unsat_missed)[:10],
     }
+
+
+def unsat_diff(cand: Normalised, oracle: Normalised) -> tuple[set[str], set[str]]:
+    """(candidate-only unsat, oracle-only unsat), the two directions kept apart.
+
+    candidate-only is a SOUNDNESS failure: the candidate says C is unsatisfiable and
+    the oracle has C satisfiable. It is empty when the oracle says the KB is
+    inconsistent, since then every class is unsatisfiable. oracle-only is a
+    completeness datum, empty when the candidate says the KB is inconsistent.
+    Thing/Nothing names never count. Mirrors rustdl's `oracle_diff::unsat_diff`.
+    """
+    cu, ou = cand.unsat_classes(), oracle.unsat_classes()
+    fp = set() if oracle.inconsistent() else cu - ou
+    missed = set() if cand.inconsistent() else ou - cu
+    return fp, missed
 
 
 # ── gate ────────────────────────────────────────────────────────────────────
@@ -749,6 +806,95 @@ def run_selftest() -> int:
     check("KM prefixed name outside the whitelist is dropped",
           parse_km(km3, ofn2).pairs(), set())
 
+    # `C ⊑ owl:Nothing` (the OWLAPI/ROBOT form) is unsat, in every Nothing spelling;
+    # `owl:Thing ⊑ owl:Nothing` marks the KB inconsistent.
+    owx2 = w("n.owx", """<?xml version="1.0"?>
+<Ontology xmlns="http://www.w3.org/2002/07/owl#" xml:base="http://e" ontologyIRI="http://e">
+ <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+ <SubClassOf><Class IRI="http://e#U1"/><Class IRI="http://www.w3.org/2002/07/owl#Nothing"/></SubClassOf>
+ <SubClassOf><Class IRI="http://e#U2"/><Class abbreviatedIRI="owl:Nothing"/></SubClassOf>
+ <SubClassOf><Class IRI="http://e#U3"/><Class IRI="Nothing"/></SubClassOf>
+ <SubClassOf><Class IRI="http://e#B"/><Class IRI="http://e#A"/></SubClassOf>
+</Ontology>
+""")
+    n2 = parse_owx(owx2)
+    check("C ⊑ Nothing recorded as unsat, all three spellings",
+          n2.unsat, {"http://e#U1", "http://e#U2", "http://e#U3"})
+    check("C ⊑ Nothing adds no pair", n2.pairs(), {(B, A)})
+    check("C ⊑ Nothing does not mark the KB inconsistent", n2.inconsistent(), False)
+    hm = w("h.txt", "SubClassOf( <http://e#U> <http://www.w3.org/2002/07/owl#Nothing> )\n"
+                    "SubClassOf( <http://www.w3.org/2002/07/owl#Thing> "
+                    "<http://www.w3.org/2002/07/owl#Nothing> )\n")
+    hn = parse_hermit(hm)
+    check("hermit C ⊑ Nothing is unsat", hn.unsat_classes(), {"http://e#U"})
+    check("Thing ⊑ Nothing marks the KB inconsistent", hn.inconsistent(), True)
+
+    # compare: the unsat sets are diffed in both directions, kept apart, and survive
+    # the symmetric exclusion that removes them from the pair diff.
+    def tsv_of(fn: str, unsat: list[str], pairs: list[tuple[str, str]]) -> str:
+        body = "#reasoner\tx\n" + "".join(f"#unsat\t{c}\n" for c in unsat)
+        return w(fn, body + "".join(f"{s}\t{t}\n" for s, t in pairs))
+
+    X, Y, U = "http://e#X", "http://e#Y", "http://e#U"
+    thing = OWL_THING
+    cand = tsv_of("c.tsv", [U, X], [(B, A)])
+    orac = tsv_of("o.tsv", [U, Y], [(B, A), (X, A)])
+    r = compare(cand, orac)
+    check("unsat FP = candidate-only unsat", (r["unsat_FP"], r["unsat_fp_sample"]), (1, [X]))
+    check("unsat MISSED = oracle-only unsat",
+          (r["unsat_MISSED"], r["unsat_missed_sample"]), (1, [Y]))
+    check("unsat FP is not folded into pair FP", r["FP"], 0)
+    orac_inc = tsv_of("oi.tsv", [thing, U], [])
+    r = compare(cand, orac_inc)
+    check("oracle inconsistent: no unsat FP", (r["unsat_FP"], r["oracle_inconsistent"]), (0, True))
+    cand_inc = tsv_of("ci.tsv", [thing, U], [])
+    r = compare(cand_inc, orac)
+    check("candidate inconsistent: no unsat MISSED, Thing never counted",
+          (r["unsat_MISSED"], r["unsat_FP"]), (0, 0))
+
+    # rustdl's real inconsistent shape: banner, every class unsat, one equiv line.
+    rinc = w("rinc.out", "# classes: 3\n# abox_check: inconsistent\n# unsatisfiable: 3\n"
+                         f"unsat\t{A}\nunsat\t{B}\nunsat\t{C}\nequiv\t{A}\t{B}\t{C}\n")
+    rn = parse_rustdl(rinc)
+    check("rustdl abox_check banner marks the KB inconsistent", rn.inconsistent(), True)
+    rinc_tsv = os.path.join(d, "rinc.tsv")
+    with open(rinc_tsv, "w", encoding="utf-8") as fh:
+        rn.write(fh)
+    r = compare(rinc_tsv, tsv_of("oinc.tsv", [thing, A, B, C, X], []))
+    check("both inconsistent: no unsat MISSED, no unsat FP", (r["unsat_MISSED"], r["unsat_FP"]),
+          (0, 0))
+    r = compare(rinc_tsv, tsv_of("ocons.tsv", [], [(B, A)]))
+    check("rustdl inconsistent vs a consistent oracle: every class is an unsat FP",
+          r["unsat_FP"], 3)
+    rcons = w("rcons.out", "# abox_check: unknown\nunsat\tX\n")
+    check("abox_check unknown is not inconsistent", parse_rustdl(rcons).inconsistent(), False)
+
+    # OWX inconsistency markers and a Thing-equivalent class called unsat.
+    owx3 = w("i.owx", """<?xml version="1.0"?>
+<Ontology xmlns="http://www.w3.org/2002/07/owl#" ontologyIRI="http://e">
+ <EquivalentClasses><Class abbreviatedIRI="owl:Thing"/><Class abbreviatedIRI="owl:Nothing"/><Class IRI="http://e#A"/></EquivalentClasses>
+</Ontology>
+""")
+    check("owx Thing ≡ Nothing marks the KB inconsistent", parse_owx(owx3).inconsistent(), True)
+    owx4 = w("i2.owx", """<?xml version="1.0"?>
+<Ontology xmlns="http://www.w3.org/2002/07/owl#" ontologyIRI="http://e">
+ <SubClassOf><Class IRI="Thing"/><Class IRI="Nothing"/></SubClassOf>
+</Ontology>
+""")
+    check("owx Thing ⊑ Nothing (relative) marks the KB inconsistent",
+          parse_owx(owx4).inconsistent(), True)
+    r = compare(tsv_of("cte.tsv", [X], []), w("ote.tsv", f"#reasoner\tx\n#thing-equiv\t{X}\n"))
+    check("a Thing-equivalent class called unsat is an unsat FP", r["unsat_FP"], 1)
+
+    # The CLI fails on unsat FP alone, and not on unsat MISSED alone.
+    import subprocess
+    def cli_rc(c: str, o: str) -> int:
+        return subprocess.run([sys.executable, os.path.abspath(__file__), "compare", c, o],
+                              capture_output=True).returncode
+    only_missed = tsv_of("m.tsv", [U], [(B, A)])
+    check("CLI exits 1 on unsat FP alone", cli_rc(cand, tsv_of("o2.tsv", [U], [(B, A)])), 1)
+    check("CLI exits 0 on unsat MISSED alone", cli_rc(only_missed, orac), 0)
+
     print("-" * 46)
     print(f"selftest: {'FAILED ' + str(len(fails)) if fails else 'all PASS'}")
     return 1 if fails else 0
@@ -793,12 +939,17 @@ def main() -> int:
         else:
             for k in ("candidate_reasoner", "oracle_reasoner", "candidate_closure",
                       "oracle_closure", "excluded_classes", "unsat_disagreement",
-                      "FP", "MISSED"):
+                      "candidate_inconsistent", "oracle_inconsistent",
+                      "FP", "MISSED", "unsat_FP", "unsat_MISSED"):
                 print(f"{k:<22} {res[k]}")
             for label in ("fp", "missed"):
                 for pair in res[f"{label}_sample"]:
                     print(f"  {label.upper():<6} {pair[0]}\t{pair[1]}")
-        return 1 if res["FP"] else 0
+            for label in ("unsat_fp", "unsat_missed"):
+                for c in res[f"{label}_sample"]:
+                    print(f"  {label.upper():<12} {c}")
+        # unsat FP fails like pair FP; unsat MISSED, like MISSED, is informational.
+        return 1 if res["FP"] or res["unsat_FP"] else 0
 
     if a.cmd == "selftest":
         return run_selftest()
