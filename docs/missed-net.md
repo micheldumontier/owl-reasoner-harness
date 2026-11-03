@@ -117,6 +117,16 @@ overrides.
   own `Sat` verdict, the fragment gates route some inputs to an incomplete engine, and
   `--pair-timeout-ms` defaults to **1000 ms**, so *the baseline arm itself is budgeted*. The
   baseline's job is to make **changes** visible as a **Δ**, not to indict the current state.
+- **Unsat is diffed separately from pairs.** The pair diff removes both sides' unsat classes
+  before comparing, so a class rustdl *wrongly* calls unsatisfiable (subsumed by everything, the
+  strongest false positive) never reaches it. `normalise.compare` therefore also reports
+  `unsat_FP` (rustdl unsat, oracle satisfiable; empty when the oracle says the KB is inconsistent)
+  and `unsat_MISSED` (the reverse), and the summary carries `unsat_FP_total` and
+  `unsat_MISSED_total`. `MISSED_total` stays pairs only, so it is comparable with every baseline
+  recorded before the split. The reader also counts `SubClassOf(C, owl:Nothing)`, the
+  OWLAPI/ROBOT form, as unsat. The same blind spot was found in rustdl's in-repo FP=0 net by a
+  mutant that made 41 classes of `ore_ont_10080` unsatisfiable while the net said FP=0 (rustdl
+  #420).
 - **It is not a soundness gate.** FP is reported (and must stay 0) but the curated
   `run-soundness-diff.sh` net plus the area canaries remain the soundness authority. A green FP=0
   net over the curated fixtures is *not* evidence of soundness in an area the fixtures are inert

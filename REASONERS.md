@@ -143,6 +143,8 @@ FP/MISSED.
 - **`owl:Thing`/`owl:Nothing`/reflexive: dropped**, in all three spellings that occur —
   absolute IRI, bare relative `Thing` (ROBOT), and `abbreviatedIRI="owl:Thing"`. Konclude
   emits `X ⊑ Thing`, HermiT does not; keeping them diffs output conventions, not logic.
+  Exception: `C ⊑ owl:Nothing` (the OWLAPI/ROBOT form) is not dropped but recorded as
+  `C` unsat, like an `≡ owl:Nothing` group; `owl:Thing` unsat marks an inconsistent KB.
 - **Equivalence groups: expanded to mutual subsumption.** Load-bearing, not cosmetic —
   HermiT emits only ONE representative of a group in its edges (`E ⊑ C` with `D ≡ E`), so
   without expansion `D ⊑ C` is lost. `≡ owl:Nothing` and `≡ owl:Thing` groups are instead

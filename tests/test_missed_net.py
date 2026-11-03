@@ -217,6 +217,78 @@ def test_delta_reports_losses_gains_and_newly_unscored(tmp_path):
     assert d["n_newly_unscored"] == 1 and d["newly_unscored"][0][0] == "c", d
 
 
+# ── unsat, diffed apart from pairs ──────────────────────────────────────────
+
+NOTHING = "http://www.w3.org/2002/07/owl#Nothing"
+
+
+def test_wrong_unsat_class_is_an_unsat_fp_and_pairs_are_untouched(tmp_path):
+    """The pair diff excludes both sides' unsat classes, so a class rustdl WRONGLY calls
+    unsatisfiable is invisible to FP. It must show up as unsat_FP, and the pair figures
+    must not move."""
+    mn = _mn(tmp_path)
+    ont = "un1"
+    # both peers: A<B, C unsat. rustdl: A<B, C unsat, D unsat (wrong).
+    _write(
+        tmp_path,
+        ont,
+        kon=_owx([(A, B)], equivs=[[NOTHING, C]]),
+        her=_hermit([(A, B)]) + f"EquivalentClasses( <{NOTHING}> <{C}> )\n",
+        arm=_rustdl([(A, B)]) + f"unsat\t{C}\nunsat\t{D}\n",
+    )
+    row = mn.one_ontology(ont, "ARM", _cases([ont]), _cases([ont]), _cases([ont]))
+    assert row["status"] == "scored", row
+    assert (row["FP"], row["MISSED"]) == (0, 0), row
+    assert (row["unsat_FP"], row["unsat_MISSED"]) == (1, 0), row
+    assert row["unsat_fp_sample"] == [D], row
+
+
+def test_inconsistent_rustdl_against_inconsistent_oracle_is_clean(tmp_path):
+    """rustdl's text output marks inconsistency only in the `# abox_check` banner; read
+    as such, a both-inconsistent row has no unsat FP and no unsat MISSED."""
+    mn = _mn(tmp_path)
+    ont = "un2"
+    thing = "http://www.w3.org/2002/07/owl#Thing"
+    _write(
+        tmp_path,
+        ont,
+        kon=_owx([], equivs=[[thing, NOTHING, A, B, C]]),
+        arm="# abox_check: inconsistent\n" + f"unsat\t{A}\nunsat\t{B}\nequiv\t{A}\t{B}\n",
+    )
+    row = mn.one_ontology(ont, "ARM", _cases([ont]), {}, _cases([ont]))
+    assert row["status"] == "scored", row
+    assert (row["unsat_FP"], row["unsat_MISSED"], row["oracle_inconsistent"]) == (0, 0, True), row
+
+
+def test_unsat_totals_count_scored_rows_and_list_contested_ones(tmp_path):
+    mn = _mn(tmp_path)
+    rows = [
+        {"ont": "a", "status": "scored", "MISSED": 5, "FP": 0, "unsat_FP": 2,
+         "unsat_MISSED": 3, "oracle_closure": 9},
+        {"ont": "b", "status": "peer_disagreement", "MISSED": 900, "FP": 0, "unsat_FP": 7,
+         "unsat_MISSED": 40},
+        {"ont": "c", "status": "scored", "MISSED": 1, "FP": 0},   # a pre-split row
+    ]
+    s = mn.summarise(rows, "ARM")
+    # MISSED_total stays pairs only: unsat_MISSED is never added to it.
+    assert s["MISSED_total"] == 6, s
+    assert (s["unsat_FP_total"], s["onts_with_unsat_FP"]) == (2, 1), s
+    assert (s["unsat_MISSED_total"], s["onts_with_unsat_MISSED"]) == (3, 1), s
+    assert s["unsat_FP_in_peer_disagreement"] == [["b", 7]], s
+
+
+def test_delta_against_a_pre_split_baseline(tmp_path):
+    """A baseline recorded before the unsat split has no unsat_MISSED: the pair delta
+    is unchanged and the unsat delta covers zero rows rather than inventing one."""
+    mn = _mn(tmp_path)
+    p = tmp_path / "base.jsonl"
+    p.write_text(json.dumps({"ont": "a", "status": "scored", "MISSED": 3}) + "\n")
+    now = [{"ont": "a", "status": "scored", "MISSED": 1, "unsat_MISSED": 4}]
+    d = mn.delta(now, str(p))
+    assert d["delta_MISSED_total"] == -2, d
+    assert (d["delta_unsat_MISSED_total"], d["delta_unsat_MISSED_rows"]) == (0, 0), d
+
+
 # ── population selection ────────────────────────────────────────────────────
 
 

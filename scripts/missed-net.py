@@ -516,9 +516,18 @@ def one_ontology(ont: str, arm: str, kcases, hcases, acases) -> dict:
             "oracle_closure": res["oracle_closure"],
             "FP": res["FP"],
             "MISSED": res["MISSED"],
+            # The pair diff excludes both sides' unsat classes, so a class rustdl wrongly
+            # calls unsatisfiable is visible ONLY here. unsat_FP is a soundness alarm
+            # like FP; unsat_MISSED is a completeness datum kept apart from MISSED, so
+            # MISSED totals stay comparable with every baseline recorded before it.
+            "unsat_FP": res["unsat_FP"],
+            "unsat_MISSED": res["unsat_MISSED"],
             "unsat_disagreement": res["unsat_disagreement"],
+            "oracle_inconsistent": res["oracle_inconsistent"],
             "missed_sample": res["missed_sample"][:3],
             "fp_sample": res["fp_sample"][:3],
+            "unsat_fp_sample": res["unsat_fp_sample"][:3],
+            "unsat_missed_sample": res["unsat_missed_sample"][:3],
         }
     )
     if row["peer_pair_diff"] or row["peer_unsat_diff"]:
@@ -574,6 +583,12 @@ def cmd_net(a) -> int:
         summary["delta_vs_baseline"] = delta(rows, a.baseline)
     (dest.with_suffix(".summary.json")).write_text(json.dumps(summary, indent=1) + "\n")
     print(json.dumps(summary, indent=1))
+    if summary["FP_total"] or summary["unsat_FP_total"]:
+        print(
+            f"SOUNDNESS ALARM: FP_total={summary['FP_total']} "
+            f"unsat_FP_total={summary['unsat_FP_total']} against the union oracle",
+            file=sys.stderr,
+        )
     return 0
 
 
@@ -602,6 +617,23 @@ def summarise(rows: list[dict], arm: str) -> dict:
         # value against a UNION oracle is a soundness alarm, not a completeness datum.
         "FP_total": sum(r.get("FP", 0) for r in scored),
         "onts_with_FP": sum(1 for r in scored if r.get("FP", 0)),
+        # UNSAT, both directions, kept apart from the pair figures above. unsat_FP is the
+        # same alarm as FP: a class rustdl calls unsatisfiable that the union oracle (so
+        # NEITHER peer) calls unsatisfiable. unsat_MISSED is completeness, like MISSED.
+        "unsat_FP_total": sum(r.get("unsat_FP", 0) for r in scored),
+        "onts_with_unsat_FP": sum(1 for r in scored if r.get("unsat_FP", 0)),
+        "unsat_FP_onts": [
+            [r["ont"], r["unsat_FP"]] for r in scored if r.get("unsat_FP", 0)
+        ][:25],
+        "unsat_MISSED_total": sum(r.get("unsat_MISSED", 0) for r in scored),
+        "onts_with_unsat_MISSED": sum(1 for r in scored if r.get("unsat_MISSED", 0)),
+        # Not scored (the peers disagree), but an unsat class neither peer has is still
+        # worth seeing: listed, never added to the totals above.
+        "unsat_FP_in_peer_disagreement": [
+            [r["ont"], r["unsat_FP"]]
+            for r in rows
+            if r["status"] == "peer_disagreement" and r.get("unsat_FP", 0)
+        ],
         "oracle_closure_total": sum(r.get("oracle_closure", 0) for r in scored),
     }
 
@@ -620,6 +652,8 @@ def delta(rows: list[dict], baseline_path: str) -> dict:
     }
     lost, gained, newly_unscored = [], [], []
     dm = 0
+    du = 0  # unsat MISSED delta; only where both rows carry it (pre-fix baselines do not)
+    du_rows = 0
     for r in rows:
         b = base.get(r["ont"])
         if b is None:
@@ -631,6 +665,9 @@ def delta(rows: list[dict], baseline_path: str) -> dict:
             continue
         d = r["MISSED"] - b["MISSED"]
         dm += d
+        if "unsat_MISSED" in r and "unsat_MISSED" in b:
+            du += r["unsat_MISSED"] - b["unsat_MISSED"]
+            du_rows += 1
         if d > 0:
             lost.append([r["ont"], b["MISSED"], r["MISSED"]])
         elif d < 0:
@@ -638,6 +675,8 @@ def delta(rows: list[dict], baseline_path: str) -> dict:
     return {
         "baseline": baseline_path,
         "delta_MISSED_total": dm,
+        "delta_unsat_MISSED_total": du,
+        "delta_unsat_MISSED_rows": du_rows,
         "onts_lost_pairs": len(lost),
         "onts_gained_pairs": len(gained),
         "lost": sorted(lost, key=lambda x: x[1] - x[2])[:25],
