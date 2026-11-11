@@ -451,3 +451,63 @@ def test_gzipped_caches_rescore_identically_without_rebuilding(tmp_path, monkeyp
     assert mn.ensure_normalised("ARM", "rustdl", ont).name == f"{ont}.tsv.gz"
     second = mn.one_ontology(ont, "ARM", cases, cases, cases)
     assert second == first
+
+
+# ── the union oracle keeps the form on disk (2026-11-11) ────────────────────
+
+
+def _oracle_files(scratch, ont):
+    d = scratch / "tsv" / "oracle"
+    return sorted(p.name for p in d.glob(f"{ont}.tsv*"))
+
+
+def test_union_oracle_is_written_gzipped_on_a_fresh_scratch(tmp_path):
+    mn = _mn(tmp_path)
+    ont = "u1"
+    _write(tmp_path, ont, kon=_owx([(A, B)]), her=_hermit([(A, B)]), arm=_rustdl([(A, B)]))
+    cases = _cases([ont])
+    mn.one_ontology(ont, "ARM", cases, cases, cases)
+    assert _oracle_files(tmp_path, ont) == [f"{ont}.tsv.gz"]
+
+
+def test_union_oracle_does_not_recreate_a_plain_duplicate_after_tidy(tmp_path):
+    """tidy.py gzips tsv/oracle in place; the next `net` run used to write a fresh plain
+    `<ont>.tsv` beside it (the plain one wins, the .gz goes stale). It must rewrite the
+    .gz instead, with the current union, and score the same."""
+    import gzip
+    import os
+    import shutil
+
+    mn = _mn(tmp_path)
+    ont = "u2"
+    _write(tmp_path, ont, kon=_owx([(A, B), (B, C)]), her=_hermit([(A, B), (B, C)]),
+           arm=_rustdl([(A, B)]))
+    cases = _cases([ont])
+    first = mn.one_ontology(ont, "ARM", cases, cases, cases)
+    for plain in sorted((tmp_path / "tsv").rglob("*.tsv")):
+        st = plain.stat()
+        gz = plain.with_name(plain.name + ".gz")
+        with plain.open("rb") as src, gzip.open(gz, "wb", compresslevel=1) as dst:
+            shutil.copyfileobj(src, dst)
+        os.utime(gz, ns=(st.st_atime_ns, st.st_mtime_ns))
+        plain.unlink()
+    second = mn.one_ontology(ont, "ARM", cases, cases, cases)
+    assert second == first
+    assert _oracle_files(tmp_path, ont) == [f"{ont}.tsv.gz"]
+    got = mn.normalise.read_normalised(str(tmp_path / "tsv" / "oracle" / f"{ont}.tsv.gz"))
+    assert (A, C) in got.pairs()
+
+
+def test_union_oracle_rewrites_an_existing_plain_file_in_place(tmp_path):
+    """A plain oracle already on disk stays plain (never deleted, no .gz beside it) and
+    gets the current union, not its stale content."""
+    mn = _mn(tmp_path)
+    ont = "u3"
+    _write(tmp_path, ont, kon=_owx([(A, B)]), her=_hermit([(A, B)]), arm=_rustdl([(A, B)]))
+    stale = tmp_path / "tsv" / "oracle" / f"{ont}.tsv"
+    stale.parent.mkdir(parents=True, exist_ok=True)
+    mn.normalise.Normalised(source=ont, reasoner="oracle-union").write(stale.open("w"))
+    cases = _cases([ont])
+    mn.one_ontology(ont, "ARM", cases, cases, cases)
+    assert _oracle_files(tmp_path, ont) == [f"{ont}.tsv"]
+    assert (A, B) in mn.normalise.read_normalised(str(stale)).pairs()
