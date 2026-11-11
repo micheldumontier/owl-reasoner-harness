@@ -496,6 +496,17 @@ def test_union_oracle_does_not_recreate_a_plain_duplicate_after_tidy(tmp_path):
     assert _oracle_files(tmp_path, ont) == [f"{ont}.tsv.gz"]
     got = mn.normalise.read_normalised(str(tmp_path / "tsv" / "oracle" / f"{ont}.tsv.gz"))
     assert (A, C) in got.pairs()
+    # The .gz is REWRITTEN with this run's union, not reused: drop HermiT and change
+    # Konclude's answer, and the oracle must follow.
+    _write(tmp_path, ont, kon=_owx([(A, B)]), arm=_rustdl([(A, B)]))
+    for leg in ("konclude",):
+        for f in (tmp_path / "tsv" / leg).glob(f"{ont}.tsv*"):
+            f.unlink()
+    only_kon = _cases([ont])
+    mn.one_ontology(ont, "ARM", only_kon, {}, only_kon)
+    assert _oracle_files(tmp_path, ont) == [f"{ont}.tsv.gz"]
+    got = mn.normalise.read_normalised(str(tmp_path / "tsv" / "oracle" / f"{ont}.tsv.gz"))
+    assert (A, C) not in got.pairs(), got.pairs()
 
 
 def test_union_oracle_rewrites_an_existing_plain_file_in_place(tmp_path):
@@ -511,3 +522,25 @@ def test_union_oracle_rewrites_an_existing_plain_file_in_place(tmp_path):
     mn.one_ontology(ont, "ARM", cases, cases, cases)
     assert _oracle_files(tmp_path, ont) == [f"{ont}.tsv"]
     assert (A, B) in mn.normalise.read_normalised(str(stale)).pairs()
+
+
+def test_union_oracle_with_both_forms_rewrites_the_plain_and_leaves_the_gz(tmp_path):
+    """Today's disk state (a plain duplicate beside tidy's .gz): the plain one is read,
+    so it is rewritten with the current union; the stale .gz is left alone (no delete)."""
+    import gzip
+
+    mn = _mn(tmp_path)
+    ont = "u4"
+    _write(tmp_path, ont, kon=_owx([(A, B)]), her=_hermit([(A, B)]), arm=_rustdl([(A, B)]))
+    d = tmp_path / "tsv" / "oracle"
+    d.mkdir(parents=True, exist_ok=True)
+    empty = mn.normalise.Normalised(source=ont, reasoner="oracle-union")
+    empty.write((d / f"{ont}.tsv").open("w"))
+    with gzip.open(d / f"{ont}.tsv.gz", "wt") as fh:
+        empty.write(fh)
+    gz_before = (d / f"{ont}.tsv.gz").read_bytes()
+    cases = _cases([ont])
+    mn.one_ontology(ont, "ARM", cases, cases, cases)
+    assert _oracle_files(tmp_path, ont) == [f"{ont}.tsv", f"{ont}.tsv.gz"]
+    assert (A, B) in mn.normalise.read_normalised(str(d / f"{ont}.tsv")).pairs()
+    assert (d / f"{ont}.tsv.gz").read_bytes() == gz_before

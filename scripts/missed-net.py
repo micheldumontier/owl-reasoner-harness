@@ -44,6 +44,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures as futures
+import gzip
 import json
 import os
 import pathlib
@@ -467,13 +468,13 @@ def union_oracle(ont: str, kon: pathlib.Path | None, her: pathlib.Path | None):
     # stays plain, otherwise gzipped (`TSV_GZ`). Writing plain unconditionally recreated
     # tidy.py's gzipped copies as fresh plain duplicates on every `net` run (393 files,
     # 1.3 GB on 2026-11-08 and 11-09); the plain one won, the .gz went stale. Nothing is
-    # deleted here.
+    # deleted here. When BOTH forms exist (a plain duplicate made before this fix), the
+    # plain one is the one read and is rewritten; the stale .gz is left for a one-time
+    # cleanup.
     if not dest.exists() and TSV_GZ:
         dest = dest.with_name(dest.name + ".gz")
-    tmp = dest.with_name(dest.name + ".part")
+    tmp = dest.with_name(f"{dest.name}.{os.getpid()}.part")  # concurrent `net` runs
     if dest.suffix == ".gz":
-        import gzip
-
         with gzip.open(tmp, "wt", encoding="utf-8", compresslevel=1) as fh:
             merged.write(fh)
     else:
